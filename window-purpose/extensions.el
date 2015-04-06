@@ -40,6 +40,22 @@
   (use-package window-purpose
     :config
     (progn
+      (defun window-purpose/other-buffers (&optional buffer visible-ok)
+        (let* ((buffer (or buffer (current-buffer)))
+               (buffers (purpose-buffers-with-purpose (purpose-buffer-purpose buffer)))
+               )
+          (setq buffers (delq buffer buffers))
+          (unless visible-ok
+            (setq buffers (cl-delete-if 'get-buffer-window buffers)))
+          buffers))
+
+      (defun window-purpose/other-buffer (&optional buffer)
+        (interactive)
+        (let ((other-buff (car (window-purpose/other-buffers buffer))))
+          (if other-buff
+              (switch-to-buffer other-buff)
+            (user-error "No other buffer"))))
+
       (purpose-mode 1)
       (defvar spacemacs-purpose-conf
         (purpose-conf "spacemacs"

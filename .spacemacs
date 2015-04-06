@@ -162,7 +162,9 @@ layers configuration."
         "ob" 'purpose-switch-buffer-with-purpose
         "oB" 'switch-buffer-without-purpose
         "od" 'purpose-toggle-window-purpose-dedicated
-        "o;" 'purpose-delete-non-dedicated-windows)))
+        "o;" 'purpose-delete-non-dedicated-windows
+        "oo" 'window-purpose/other-buffer)))
+  (define-key spacemacs-mode-map (kbd "<backtab>") 'widget-backward)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
