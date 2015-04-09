@@ -10,6 +10,9 @@
 ;;
 ;;; License: GPLv3
 
+(defvar window-purpose-load-extensions nil
+  "Non-nil to load window-purpose-x (extensions for window-purspose).")
+
 (defvar window-purpose-pre-extensions
   '(
     ;; pre extension window-purposes go here
@@ -66,9 +69,12 @@
                    `(terminal purpose-display-reuse-window-buffer
                               purpose-display-reuse-window-purpose
                               ,(purpose-generate-display-and-dedicate 'purpose-display-at-bottom 8)))
-                              ;; ,(my-display-and-dedicate 'purpose-display-at-bottom 8)))
       ;; (eval-after-load
       ;;  'helm
       ;;  (advice-add 'helm-default-display-buffer :after #'my-dedicate-adv))
+
+      (when window-purpose-load-extensions
+        (use-package imenu-list)
+        (require 'window-purpose-x))
       )
     ))

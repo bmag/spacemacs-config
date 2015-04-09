@@ -33,6 +33,7 @@
    dotspacemacs-configuration-layers '(auto-completion
                                        clojure
                                        git
+                                       perspectives
                                        python
                                        smex
                                        themes-megapack
@@ -143,6 +144,7 @@ before layers configuration."
    )
   ;; User initialization goes here
   (setq-default git-magit-status-fullscreen t)
+  (setq window-purpose-load-extensions t)
   (setq save-interprogram-paste-before-kill t)
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
@@ -165,6 +167,52 @@ layers configuration."
         "o;" 'purpose-delete-non-dedicated-windows
         "oo" 'window-purpose/other-buffer)))
   (define-key spacemacs-mode-map (kbd "<backtab>") 'widget-backward)
+  ;; need anaconda-mode's fork for these to work:
+  (evil-leader/set-key-for-mode 'python-mode
+    "mgt" 'anaconda-mode-goto-top-level
+    "mht" 'anaconda-mode-view-doc-top-level)
+
+
+  (defvar persp-special-display-actions nil)
+  (defun persp/remove-display-actions ()
+    (dolist (action persp-special-display-actions)
+      (setq purpose-special-action-sequences
+            (cl-remove (car action)
+                       purpose-special-action-sequences
+                       :key 'car))))
+  (defun persp/add-display-actions (actions)
+    (dolist (action actions)
+      (add-to-list 'purpose-special-action-sequences action)
+      (add-to-list 'persp-special-display-actions action)))
+  (defun persp/load-persp (persp-conf)
+    (purpose-set-extension-configuration :perspective
+                                         (plist-get persp-conf :purposes))
+    (cond ((plist-get persp-conf :layout-object)
+           (purpose-set-window-layout (plist-get persp-conf :layout-object)))
+          ((plist-get persp-conf :layout-filename)
+           (purpose-load-window-layout (plist-get persp-conf :layout-filename))))
+    (persp/remove-display-actions)
+    (persp/add-display-actions (plist-get persp-conf :special-display-actions)))
+
+  (defvar sicp-persp
+    (list :layout-filename "~/.emacs.d/private/layouts/sicp.window-layout"
+          :layout-object nil
+          :purposes (purpose-conf "sicp"
+                                  :mode-purposes '((python-mode . py)
+                                                   (inferior-python-mode . repl)))
+          :special-display-actions
+          `((repl purpose-display-reuse-window-buffer
+                  purpose-display-reuse-window-purpose
+                  ,(purpose-generate-display-and-dedicate 'purpose-display-at-bottom 8)))))
+  (defun custom-persp/sicp ()
+    (interactive)
+    (custom-persp
+     "sicp"
+     (persp/load-persp sicp-persp)
+     (find-file "~/Documents/python/sicp/a.py")
+     (run-python (python-shell-parse-command))
+     (display-buffer (python-shell-get-buffer))))
+  (evil-leader/set-key "Los" 'custom-persp/sicp)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
