@@ -10,14 +10,20 @@
 (defun make-arg-line (arg)
   (let ((name (nth 0 arg))
         (default (nth 1 arg)))
-    (setq my-last-field (1+ my-last-field))
-    (format ":type %s: $%s" name my-last-field)))
+    ;; (setq my-last-field (1+ my-last-field))
+    (cond ((string-prefix-p "**" name)
+           (format ":type %s: {}" name))
+          ((string-prefix-p "*" name)
+           ;; (format ":type %s: ($%s)" name my-last-field))
+           (format ":type %s: ()" name))
+          (t
+           ;; (format ":type %s: $%s" name my-last-field)))
+           (format ":type %s:" name)))))
 
 (defun make-indented-arg-line (arg indent)
   (concat indent (make-arg-line arg)))
 
 (defun python-args-docstring ()
-  (message "Point: %S" (point))
   (let* ((my-last-field 3)
          (indent (make-indent (current-column)))
          (newline-and-indent (concat "\n" indent))

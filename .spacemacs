@@ -193,6 +193,9 @@ layers configuration."
            (purpose-load-window-layout (plist-get persp-conf :layout-filename))))
     (persp/remove-display-actions)
     (persp/add-display-actions (plist-get persp-conf :special-display-actions)))
+  (defun persp/reset-purpose-conf ()
+    (interactive)
+    (persp/load-persp nil))
 
   (defvar sicp-persp
     (list :layout-filename "~/.emacs.d/private/layouts/sicp.window-layout"

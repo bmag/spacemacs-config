@@ -64,11 +64,12 @@
         (purpose-conf "spacemacs"
                       :name-purposes `((,spacemacs-buffer-name . splash))))
       (purpose-set-extension-configuration :spacemacs spacemacs-purpose-conf)
-      (setq purpose-special-action-sequences (cl-delete 'terminal purpose-special-action-sequences :key 'car))
-      (add-to-list 'purpose-special-action-sequences
-                   `(terminal purpose-display-reuse-window-buffer
-                              purpose-display-reuse-window-purpose
-                              ,(purpose-generate-display-and-dedicate 'purpose-display-at-bottom 8)))
+      ;; (setq purpose-special-action-sequences (cl-delete 'terminal purpose-special-action-sequences :key 'car))
+      ;; (add-to-list 'purpose-special-action-sequences
+      ;;              `(terminal purpose-display-reuse-window-buffer
+      ;;                         purpose-display-reuse-window-purpose
+      ;;                         ,(purpose-generate-display-and-dedicate 'purpose-display-at-bottom 8)))
+
       ;; (eval-after-load
       ;;  'helm
       ;;  (advice-add 'helm-default-display-buffer :after #'my-dedicate-adv))
