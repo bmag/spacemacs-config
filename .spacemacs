@@ -30,14 +30,23 @@
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
-   dotspacemacs-configuration-layers '(auto-completion
-                                       clojure
+   dotspacemacs-configuration-layers '(;; coding
+                                       (auto-completion :variables
+                                                        auto-completion-enable-company-yasnippet nil)
                                        git
-                                       perspectives
-                                       python
+                                       syntax-checking
+                                       gtags
+
+                                       ;; UI
                                        smex
                                        themes-megapack
-                                       window-purpose)
+                                       perspectives
+                                       window-purpose
+
+                                       ;; languages
+                                       clojure
+                                       python
+                                       my-python)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -157,6 +166,7 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
+  (setq browse-url-browser-function 'browse-url-firefox)
   (with-eval-after-load 'evil-leader
     (progn
       (evil-leader/set-key "xts" 'transpose-sexps)
