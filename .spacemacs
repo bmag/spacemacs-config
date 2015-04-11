@@ -36,6 +36,7 @@
                                        git
                                        syntax-checking
                                        gtags
+                                       cscope
 
                                        ;; UI
                                        smex
