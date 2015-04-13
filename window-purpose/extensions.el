@@ -24,7 +24,7 @@
   ;; (use-package 'popwin
   ;;   :defer 5
   ;;   :config
-  ;; (let ((popwin-path (concat (file-name-as-directory configuration-layer-contrib-directory)
+  ;; (let ((popwin-path (concat (file-name-as-directory configuration-layer-private-directory)
   ;;                            (file-name-as-directory "window-purpose")
   ;;                            (file-name-as-directory "extensions")
   ;;                            "popwin.el")))

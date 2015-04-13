@@ -2,26 +2,6 @@
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
-(defun my-post-theme-init (theme)
-  "Personal additions to themes."
-  (cond
-   ((eql theme 'tangotango)
-    (custom-theme-set-faces
-     'tangotango
-     '(spacemacs-mode-line-flycheck-info-face ((t (:foreground "dodger blue" :box (:line-width 1 :style released-button)))))
-     '(spacemacs-mode-line-flycheck-warning-face ((t (:foreground "#edd400" :box (:line-width 1 :style released-button)))))
-     '(spacemacs-mode-line-flycheck-error-face ((t (:foreground "tomato" :box (:line-width 1 :style released-button)))))
-     '(rainbow-delimiters-depth-1-face ((t (:foreground "#729fcf"))))
-     '(rainbow-delimiters-depth-2-face ((t (:foreground "sandy brown"))))
-     '(rainbow-delimiters-depth-3-face ((t (:foreground "green yellow"))))
-     '(rainbow-delimiters-depth-4-face ((t (:foreground "hot pink"))))
-     '(rainbow-delimiters-depth-5-face ((t (:foreground "LightGoldenrod1"))))
-     '(rainbow-delimiters-depth-6-face ((t (:foreground "light sky blue"))))
-     '(rainbow-delimiters-depth-7-face ((t (:foreground "light green"))))
-     '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
-     '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
-    ))))
-
 (defun dotspacemacs/layers ()
   "Configuration Layers declaration."
   (setq-default
@@ -30,31 +10,39 @@
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
-   dotspacemacs-configuration-layers '(;; coding
-                                       (auto-completion :variables
-                                                        auto-completion-enable-company-yasnippet nil)
-                                       git
-                                       syntax-checking
-                                       gtags
-                                       cscope
+   dotspacemacs-configuration-layers
+   '(
+     ;; --------------------------------------------------------
+     ;; Example of useful layers you may want to use right away
+     ;; Uncomment a layer name and press C-c C-c to install it
+     ;; --------------------------------------------------------
+     (auto-completion :variables
+                      auto-completion-enable-company-yasnippet nil)
+     ;; better-defaults
+     (git :variables
+          git-gutter-use-fringe t)
+     markdown
+     ;; org
+     syntax-checking
 
-                                       ;; UI
-                                       smex
-                                       themes-megapack
-                                       perspectives
-                                       window-purpose
+     ;; additional contrib layers
+     python
+     smex
+     themes-megapack
+     perspectives
 
-                                       ;; languages
-                                       clojure
-                                       markdown
-                                       python
-                                       my-python)
+     ;; private layers
+     my-python
+     gtags
+     cscope
+     window-purpose
+     )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
    ;; are declared in a layer which is not a member of
    ;; the list `dotspacemacs-configuration-layers'
-   dotspacemacs-delete-orphan-packages nil))
+   dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -66,6 +54,8 @@ before layers configuration."
    ;; Either `vim' or `emacs'. Evil is always enabled but if the variable
    ;; is `emacs' then the `holy-mode' is enabled at startup.
    dotspacemacs-editing-style 'vim
+   ;; If non nil output loading progess in `*Messages*' buffer.
+   dotspacemacs-verbose-loading nil
    ;; Specify the startup banner. Default value is `official', it displays
    ;; the official spacemacs logo. An integer value is the index of text
    ;; banner, `random' chooses a random text banner in `core/banners'
@@ -73,6 +63,8 @@ before layers configuration."
    ;; If the value is nil then no banner is displayed.
    ;; dotspacemacs-startup-banner 'official
    dotspacemacs-startup-banner 'official
+   ;; t if you always want to see the changelog at startup
+   dotspacemacs-always-show-changelog t
    ;; List of items to show in the startup buffer. If nil it is disabled.
    ;; Possible values are: `recents' `bookmarks' `projects'."
    dotspacemacs-startup-lists '(recents projects)
@@ -155,7 +147,6 @@ before layers configuration."
    )
   ;; User initialization goes here
   (setq-default git-magit-status-fullscreen t)
-  ;; (setq window-purpose-load-extensions t)
   (setq save-interprogram-paste-before-kill t)
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
@@ -168,75 +159,37 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
-  (setq browse-url-browser-function 'browse-url-firefox)
-  (evil-leader/set-key "xts" 'transpose-sexps)
-  ;; (evil-leader/set-key
-  ;;   "ob" 'purpose-switch-buffer-with-purpose
-  ;;   "oB" 'switch-buffer-without-purpose
-  ;;   "od" 'purpose-toggle-window-purpose-dedicated
-  ;;   "o;" 'purpose-delete-non-dedicated-windows
-  ;;   "oo" 'window-purpose/other-buffer)
-
-  ;; (define-key spacemacs-mode-map (kbd "<backtab>") 'widget-backward)
-  ;; need anaconda-mode's fork for these to work:
-  (evil-leader/set-key-for-mode 'python-mode
-    "mgt" 'anaconda-mode-goto-top-level
-    "mht" 'anaconda-mode-view-doc-top-level)
-
+  ;; (setq browse-url-browser-function 'browse-url-firefox)
   (dolist (mode '(emacs-lisp-mode python-mode))
     (add-hook mode 'paredit-mode))
 
-  (golden-ratio-mode)
+  ;; (golden-ratio-mode)
 
   (defvar work-purpose-conf
     (purpose-conf "work"
                   :mode-purposes '((conf-unix-mode . edit))))
   (purpose-set-extension-configuration :work work-purpose-conf)
+)
 
-  (defvar persp-special-display-actions nil)
-  (defun persp/remove-display-actions ()
-    (dolist (action persp-special-display-actions)
-      (setq purpose-special-action-sequences
-            (cl-remove (car action)
-                       purpose-special-action-sequences
-                       :key 'car))))
-  (defun persp/add-display-actions (actions)
-    (dolist (action actions)
-      (add-to-list 'purpose-special-action-sequences action)
-      (add-to-list 'persp-special-display-actions action)))
-  (defun persp/load-persp (persp-conf)
-    (purpose-set-extension-configuration :perspective
-                                         (plist-get persp-conf :purposes))
-    (cond ((plist-get persp-conf :layout-object)
-           (purpose-set-window-layout (plist-get persp-conf :layout-object)))
-          ((plist-get persp-conf :layout-filename)
-           (purpose-load-window-layout (plist-get persp-conf :layout-filename))))
-    (persp/remove-display-actions)
-    (persp/add-display-actions (plist-get persp-conf :special-display-actions)))
-  (defun persp/reset-purpose-conf ()
-    (interactive)
-    (persp/load-persp nil))
-
-  (defvar sicp-persp
-    (list :layout-filename "~/.emacs.d/private/layouts/sicp.window-layout"
-          :layout-object nil
-          :purposes (purpose-conf "sicp"
-                                  :mode-purposes '((python-mode . py)
-                                                   (inferior-python-mode . repl)))
-          :special-display-actions
-          `((repl purpose-display-reuse-window-buffer
-                  purpose-display-reuse-window-purpose
-                  ,(purpose-generate-display-and-dedicate 'purpose-display-at-bottom 8)))))
-  (defun custom-persp/sicp ()
-    (interactive)
-    (custom-persp
-     "sicp"
-     (persp/load-persp sicp-persp)
-     (find-file "~/Documents/python/sicp/a.py")
-     (run-python (python-shell-parse-command))
-     (display-buffer (python-shell-get-buffer))))
-  (evil-leader/set-key "Los" 'custom-persp/sicp)
-  )
+(defun my-post-theme-init (theme)
+  "Personal additions to themes."
+  (cond
+   ((eql theme 'tangotango)
+    (custom-theme-set-faces
+     'tangotango
+     '(spacemacs-mode-line-flycheck-info-face ((t (:foreground "dodger blue" :box (:line-width 1 :style released-button)))))
+     '(spacemacs-mode-line-flycheck-warning-face ((t (:foreground "#edd400" :box (:line-width 1 :style released-button)))))
+     '(spacemacs-mode-line-flycheck-error-face ((t (:foreground "tomato" :box (:line-width 1 :style released-button)))))
+     '(rainbow-delimiters-depth-1-face ((t (:foreground "#729fcf"))))
+     '(rainbow-delimiters-depth-2-face ((t (:foreground "sandy brown"))))
+     '(rainbow-delimiters-depth-3-face ((t (:foreground "green yellow"))))
+     '(rainbow-delimiters-depth-4-face ((t (:foreground "hot pink"))))
+     '(rainbow-delimiters-depth-5-face ((t (:foreground "LightGoldenrod1"))))
+     '(rainbow-delimiters-depth-6-face ((t (:foreground "light sky blue"))))
+     '(rainbow-delimiters-depth-7-face ((t (:foreground "light green"))))
+     '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
+     '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
+    ))))
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.

@@ -34,8 +34,7 @@ which require an initialization must be listed explicitly in the list.")
 
       (setq purpose-default-layout-file
             (concat
-             (file-name-as-directory configuration-layer-contrib-directory)
-             (file-name-as-directory "window-purpose")
+             (file-name-as-directory configuration-layer-private-directory)
              (file-name-as-directory "layouts")))
 
       (purpose-mode)
