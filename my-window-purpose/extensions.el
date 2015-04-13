@@ -1,4 +1,4 @@
-;;; extensions.el --- window-purpose Layer extensions File for Spacemacs
+;;; extensions.el --- my-window-purpose Layer extensions File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
 ;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
@@ -10,23 +10,23 @@
 ;;
 ;;; License: GPLv3
 
-(defvar window-purpose-load-extensions nil
-  "Non-nil to load window-purpose-x (extensions for window-purspose).")
+(defvar my-window-purpose-load-extensions nil
+  "Non-nil to load my-window-purpose-x (extensions for window-purspose).")
 
-(defvar window-purpose-pre-extensions
+(defvar my-window-purpose-pre-extensions
   '(
-    ;; pre extension window-purposes go here
+    ;; pre extension my-window-purposes go here
     )
   "List of all extensions to load before the packages.")
 
-(defvar window-purpose-post-extensions
+(defvar my-window-purpose-post-extensions
   '(
-    ;; post extension window-purposes go here
-    window-purpose
+    ;; post extension my-window-purposes go here
+    my-window-purpose
     )
   "List of all extensions to load after the packages.")
 
-;; For each extension, define a function window-purpose/init-<extension-window-purpose>
+;; For each extension, define a function my-window-purpose/init-<extension-my-window-purpose>
 
 ;; (defmacro my-display-and-dedicate (display-fn &rest extra-args)
 ;;   `(lambda (buffer alist)
@@ -38,12 +38,12 @@
 ;; (defun my-dedicate-adv (&rest args)
 ;;   (set-window-dedicated-p nil t))
 
-(defun window-purpose/init-window-purpose ()
+(defun my-window-purpose/init-window-purpose ()
   "Initialize window-purpose."
   (use-package window-purpose
     :config
     (progn
-      (defun window-purpose/other-buffers (&optional buffer visible-ok)
+      (defun my-window-purpose/other-buffers (&optional buffer visible-ok)
         (let* ((buffer (or buffer (current-buffer)))
                (buffers (purpose-buffers-with-purpose (purpose-buffer-purpose buffer)))
                )
@@ -52,9 +52,9 @@
             (setq buffers (cl-delete-if 'get-buffer-window buffers)))
           buffers))
 
-      (defun window-purpose/other-buffer (&optional buffer)
+      (defun my-window-purpose/other-buffer (&optional buffer)
         (interactive)
-        (let ((other-buff (car (window-purpose/other-buffers buffer))))
+        (let ((other-buff (car (my-window-purpose/other-buffers buffer))))
           (if other-buff
               (switch-to-buffer other-buff)
             (user-error "No other buffer"))))
@@ -74,7 +74,7 @@
       ;;  'helm
       ;;  (advice-add 'helm-default-display-buffer :after #'my-dedicate-adv))
 
-      (when window-purpose-load-extensions
+      (when my-window-purpose-load-extensions
         (use-package imenu-list)
         (require 'window-purpose-x))
       )

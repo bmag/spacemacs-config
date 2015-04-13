@@ -46,6 +46,7 @@
 
                                        ;; languages
                                        clojure
+                                       markdown
                                        python
                                        my-python)
    ;; A list of packages and/or extensions that will not be install and loaded.
@@ -53,7 +54,7 @@
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
    ;; are declared in a layer which is not a member of
    ;; the list `dotspacemacs-configuration-layers'
-   dotspacemacs-delete-orphan-packages t))
+   dotspacemacs-delete-orphan-packages nil))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -154,7 +155,7 @@ before layers configuration."
    )
   ;; User initialization goes here
   (setq-default git-magit-status-fullscreen t)
-  (setq window-purpose-load-extensions t)
+  ;; (setq window-purpose-load-extensions t)
   (setq save-interprogram-paste-before-kill t)
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
@@ -168,21 +169,29 @@ before layers configuration."
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
   (setq browse-url-browser-function 'browse-url-firefox)
-  (with-eval-after-load 'evil-leader
-    (progn
-      (evil-leader/set-key "xts" 'transpose-sexps)
-      (evil-leader/set-key
-        "ob" 'purpose-switch-buffer-with-purpose
-        "oB" 'switch-buffer-without-purpose
-        "od" 'purpose-toggle-window-purpose-dedicated
-        "o;" 'purpose-delete-non-dedicated-windows
-        "oo" 'window-purpose/other-buffer)))
-  (define-key spacemacs-mode-map (kbd "<backtab>") 'widget-backward)
+  (evil-leader/set-key "xts" 'transpose-sexps)
+  ;; (evil-leader/set-key
+  ;;   "ob" 'purpose-switch-buffer-with-purpose
+  ;;   "oB" 'switch-buffer-without-purpose
+  ;;   "od" 'purpose-toggle-window-purpose-dedicated
+  ;;   "o;" 'purpose-delete-non-dedicated-windows
+  ;;   "oo" 'window-purpose/other-buffer)
+
+  ;; (define-key spacemacs-mode-map (kbd "<backtab>") 'widget-backward)
   ;; need anaconda-mode's fork for these to work:
   (evil-leader/set-key-for-mode 'python-mode
     "mgt" 'anaconda-mode-goto-top-level
     "mht" 'anaconda-mode-view-doc-top-level)
 
+  (dolist (mode '(emacs-lisp-mode python-mode))
+    (add-hook mode 'paredit-mode))
+
+  (golden-ratio-mode)
+
+  (defvar work-purpose-conf
+    (purpose-conf "work"
+                  :mode-purposes '((conf-unix-mode . edit))))
+  (purpose-set-extension-configuration :work work-purpose-conf)
 
   (defvar persp-special-display-actions nil)
   (defun persp/remove-display-actions ()

@@ -1,4 +1,4 @@
-;;; packages.el --- window-purpose Layer packages File for Spacemacs
+;;; packages.el --- my-window-purpose Layer packages File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
 ;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
@@ -10,21 +10,21 @@
 ;;
 ;;; License: GPLv3
 
-(defvar window-purpose-packages
+(defvar my-window-purpose-packages
   '(
-    ;; package window-purposes go here
+    ;; package my-window-purposes go here
     imenu-list
     let-alist
     )
   "List of all packages to install and/or initialize. Built-in packages
 which require an initialization must be listed explicitly in the list.")
 
-(defvar window-purpose-excluded-packages '()
+(defvar my-window-purpose-excluded-packages '()
   "List of packages to exclude.")
 
-;; For each package, define a function window-purpose/init-<package-window-purpose>
+;; For each package, define a function my-window-purpose/init-<package-my-window-purpose>
 ;;
-;; (defun window-purpose/init-my-package ()
+;; (defun my-window-purpose/init-my-package ()
 ;;   "Initialize my package"
 ;;   )
 ;;
@@ -32,5 +32,5 @@ which require an initialization must be listed explicitly in the list.")
 ;; For more info on `use-package', see readme:
 ;; https://github.com/jwiegley/use-package
 
-(defun window-purpose/init-imenu-list ()
+(defun my-window-purpose/init-imenu-list ()
   (use-package imenu-list))
