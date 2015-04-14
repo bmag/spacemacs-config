@@ -22,7 +22,7 @@
      (git :variables
           git-gutter-use-fringe t)
      markdown
-     ;; org
+     org
      syntax-checking
 
      ;; additional contrib layers
@@ -167,7 +167,9 @@ layers configuration."
 
   (defvar work-purpose-conf
     (purpose-conf "work"
-                  :mode-purposes '((conf-unix-mode . edit))))
+                  :mode-purposes '((conf-unix-mode . edit)
+                                   (org-mode . org))
+                  :regexp-purposes '(("\\.log$" . log))))
   (purpose-set-extension-configuration :work work-purpose-conf)
 )
 
