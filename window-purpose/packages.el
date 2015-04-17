@@ -59,6 +59,7 @@ which require an initialization must be listed explicitly in the list.")
         "rn" 'purpose-delete-non-dedicated-windows
         "rt" 'purpose-reset-window-layout
         "rT" 'purpose-reset-frame-layout
+        "rp" 'purpose-switch-buffer-with-some-purpose
         "rP" 'purpose-set-window-purpose))))
 
 (defun window-purpose/init-imenu-list ()
