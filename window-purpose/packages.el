@@ -22,15 +22,34 @@ which require an initialization must be listed explicitly in the list.")
   '(popwin)
   "List of packages to exclude.")
 
+(defvar spacemacs-repl-modes '(inferior-python-mode slime-repl-mode))
+(defvar spacemacs-right-window-width 60)
+(defvar spacemacs-bottom-window-height 12)
+
 (defun window-purpose/init-window-purpose ()
   (use-package window-purpose
     :config
     (progn
       (defvar window-purpose-spacemacs-conf
         (purpose-conf "spacemacs"
-                      :name-purposes `((,spacemacs-buffer-name . home))))
+                      :name-purposes `((,spacemacs-buffer-name . home))
+                      :mode-purposes '((inferior-python-mode . repl)
+                                       (slime-repl-mode . repl))))
+      (dolist (mode spacemacs-repl-modes)
+        (push `(,mode . repl) (oref window-purpose-spacemacs-conf :mode-purposes))
+        (evil-leader/set-key-for-mode mode
+          "mRR" 'spacemacs/move-repl-to-right
+          "mRB" 'spacemacs/move-repl-to-bottom))
       (purpose-set-extension-configuration :spacemacs
                                            window-purpose-spacemacs-conf)
+
+      (setq purpose-special-action-sequences
+            (cl-delete 'repl purpose-special-action-sequences
+                       :key 'car))
+      (push '(repl purpose-display-reuse-window-buffer
+                   purpose-display-reuse-window-purpose
+                   spacemacs/display-repl-at-right)
+            purpose-special-action-sequences)
 
       (setq purpose-default-layout-file
             (concat

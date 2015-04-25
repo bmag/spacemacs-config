@@ -30,6 +30,7 @@
      smex
      themes-megapack
      perspectives
+     slime
 
      ;; private layers
      my-python
@@ -171,6 +172,7 @@ layers configuration."
                                    (org-mode . org))
                   :regexp-purposes '(("\\.log$" . log))))
   (purpose-set-extension-configuration :work work-purpose-conf)
+  (setq helm-display-function #'my-helm-display-buffer)
 )
 
 (defun my-post-theme-init (theme)
@@ -193,5 +195,63 @@ layers configuration."
      '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
     ))))
 
+;; taken from https://github.com/nex3/perspective-el/pull/43/files
+(defun my-get-perspectives-for-buffer (buffer)
+  "Get the names of all of the perspectives of which BUFFER is a member."
+  (cl-loop for perspective being the hash-value of perspectives-hash
+           if (member buffer (persp-buffers perspective))
+           collect (persp-name perspective)))
+
+;; taken from https://github.com/nex3/perspective-el/pull/43/files
+(defun my-switch-buffer-and-perspective (buffer)
+  "Switch to BUFFER and its perspective."
+  (interactive "BBuffer: \n")
+  (let* ((buffer (get-buffer-create buffer))
+         (perspectives (my-get-perspectives-for-buffer buffer))
+         (perspective (or (and (member (persp-name persp-curr) perspectives)
+                               (persp-name persp-curr))
+                          ;; perspectives' length is 1 (if length is 0 the result is nil)
+                          (and (null (cdr perspectives))
+                               (car perspectives))
+                          (completing-read "Perspective: " perspectives))))
+    (if (string= perspective (persp-name persp-curr))
+        (switch-to-buffer buffer)
+      (persp-switch perspective)
+      (if (get-buffer-window buffer)
+          (set-frame-selected-window nil (get-buffer-window buffer))
+        (switch-to-buffer buffer)))))
+
+(defun my-helm-display-buffer (buffer)
+  (let ((window (or (purpose-display-reuse-window-buffer buffer nil)
+                    (purpose-display-reuse-window-purpose buffer nil)
+                    (purpose-display-at-bottom buffer nil 0.5))))
+    (if window
+        (progn
+          (select-window window)
+          ;; don't know why, but it doesn't work without `switch-to-buffer'
+          (switch-to-buffer buffer t t))
+      ;; in case the above methods weren't successful, fallback to default
+      ;; helm display function
+      (funcall #'helm-default-display-buffer buffer))))
+
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ahs-case-fold-search nil)
+ '(ahs-default-range (quote ahs-range-whole-buffer))
+ '(ahs-idle-interval 0.25)
+ '(ahs-idle-timer 0 t)
+ '(ahs-inhibit-face-list nil)
+ '(paradox-github-token t)
+ '(ring-bell-function (quote ignore) t))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
+ '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
