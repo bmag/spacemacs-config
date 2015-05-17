@@ -13,6 +13,7 @@
 (defvar cscope-packages
   '(
     ;; package cscopes go here
+    evil-jumper
     helm-cscope
     xcscope
     )
@@ -21,6 +22,10 @@ which require an initialization must be listed explicitly in the list.")
 
 (defvar cscope-excluded-packages '()
   "List of packages to exclude.")
+
+(defun cscope/init-evil-jump ()
+  (defadvice helm-cscope-find-this-symbol (before cscope/goto activate)
+    (evil-jumper--push)))
 
 (defun cscope/init-helm-cscope ()
   (use-package helm-cscope

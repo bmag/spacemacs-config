@@ -30,6 +30,7 @@
      smex
      themes-megapack
      perspectives
+     php
      slime
 
      ;; private layers
@@ -161,19 +162,37 @@ before layers configuration."
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
   ;; (setq browse-url-browser-function 'browse-url-firefox)
-  (dolist (mode '(emacs-lisp-mode python-mode))
-    (add-hook mode 'paredit-mode))
+  ;; (dolist (mode-hook '(emacs-lisp-mode-hook python-mode-hook))
+  ;;   (add-hook mode-hook 'paredit-mode))
 
   ;; (golden-ratio-mode)
 
   (defvar work-purpose-conf
     (purpose-conf "work"
                   :mode-purposes '((conf-unix-mode . edit)
-                                   (org-mode . org))
+                                   (org-mode . org)
+                                   (python-mode . py))
                   :regexp-purposes '(("\\.log$" . log))))
   (purpose-set-extension-configuration :work work-purpose-conf)
+  (add-to-list 'purpose-user-name-purposes '("*Ilist*" . Ilist))
+  (purpose-compile-user-configuration)
+  (add-hook 'purpose-display-buffer-functions #'my-dedicate-repl)
   (setq helm-display-function #'my-helm-display-buffer)
-)
+  (defun work-python-hook ()
+    (setq-local indent-tabs-mode t)
+    (flycheck-mode -1))
+  (defun make-work-settings ()
+    (interactive)
+    (setq-default python-indent-offset 4)
+    (setq-default python-indent-guess-indent-offset nil)
+    (add-hook 'python-mode-hook 'work-python-hook))
+  (defun toggle-tabs-mode ()
+    (interactive)
+    (setq indent-tabs-mode (not indent-tabs-mode)))
+  (evil-leader/set-key "ot" 'toggle-tabs-mode)
+  (evil-leader/set-key-for-mode 'python-mode
+    "mhj" 'jump-do-anaconda-view-doc
+    "mhr" 'jump-do-anaconda-usages))
 
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
@@ -193,6 +212,7 @@ layers configuration."
      '(rainbow-delimiters-depth-7-face ((t (:foreground "light green"))))
      '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
      '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
+     '(evil-search-highlight-persist-highlight-face ((t (:background "orange3"))))
     ))))
 
 ;; taken from https://github.com/nex3/perspective-el/pull/43/files
@@ -224,7 +244,7 @@ layers configuration."
 (defun my-helm-display-buffer (buffer)
   (let ((window (or (purpose-display-reuse-window-buffer buffer nil)
                     (purpose-display-reuse-window-purpose buffer nil)
-                    (purpose-display-at-bottom buffer nil 0.5))))
+                    (purpose-display-at-bottom buffer nil 0.3))))
     (if window
         (progn
           (select-window window)
@@ -233,6 +253,28 @@ layers configuration."
       ;; in case the above methods weren't successful, fallback to default
       ;; helm display function
       (funcall #'helm-default-display-buffer buffer))))
+
+(defvar jump-do-fn nil)
+(defun jump-do-after-jump ()
+  (remove-hook 'ace-jump-mode-end-hook #'jump-do-after-jump)
+  (when (functionp jump-do-fn)
+    (with-demoted-errors (funcall jump-do-fn))
+    (setq jump-do-fn nil))
+  (call-interactively #'ace-jump-mode-pop-mark))
+(defun jump-do (fn)
+  (setq jump-do-fn fn)
+  (add-hook 'ace-jump-mode-end-hook #'jump-do-after-jump)
+  (call-interactively #'ace-jump-char-mode))
+(defmacro define-jump-do-command (name fn)
+  `(defun ,name ()
+     (interactive)
+     (jump-do ,fn)))
+(define-jump-do-command jump-do-anaconda-view-doc #'anaconda-mode-view-doc)
+(define-jump-do-command jump-do-anaconda-usages #'anaconda-mode-usages)
+
+(defun my-dedicate-repl (window)
+  (when (eql (purpose-window-purpose window) 'repl)
+    (purpose-set-window-purpose-dedicated-p window t)))
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -247,7 +289,11 @@ layers configuration."
  '(ahs-idle-timer 0 t)
  '(ahs-inhibit-face-list nil)
  '(paradox-github-token t)
- '(ring-bell-function (quote ignore) t))
+ '(ring-bell-function (quote ignore) t)
+ '(safe-local-variable-values
+   (quote
+    ((projectile-tags-file-name . "cscope.out")
+     (cscope-option-do-not-update-database . t)))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

@@ -48,7 +48,7 @@ which require an initialization must be listed explicitly in the list.")
                        :key 'car))
       (push '(repl purpose-display-reuse-window-buffer
                    purpose-display-reuse-window-purpose
-                   spacemacs/display-repl-at-right)
+                   spacemacs/display-repl-at-bottom)
             purpose-special-action-sequences)
 
       (setq purpose-default-layout-file
@@ -61,7 +61,7 @@ which require an initialization must be listed explicitly in the list.")
       ;; "glue" golden-ration and window-purpose
       (purpose-x-golden-ratio-setup)
       ;; enable magit purpose-conf
-      (purpose-x-magit-multi-on)
+      (purpose-x-magit-single-on)
 
       ;; bug - using `purpose-set-window-purpose' doesn't trigger all of
       ;; setup actions needed by spacemacs.
