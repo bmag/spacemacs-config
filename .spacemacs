@@ -26,25 +26,26 @@
      syntax-checking
 
      ;; additional contrib layers
+     emacs-lisp
      python
      smex
      themes-megapack
      perspectives
      php
      slime
+     gtags
 
      ;; private layers
      my-python
-     gtags
      cscope
-     window-purpose
+     ;; window-purpose
      )
    ;; A list of packages and/or extensions that will not be install and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(php-extras)
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
    ;; are declared in a layer which is not a member of
    ;; the list `dotspacemacs-configuration-layers'
-   dotspacemacs-delete-orphan-packages t))
+   dotspacemacs-delete-orphan-packages nil))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -69,7 +70,7 @@ before layers configuration."
    dotspacemacs-always-show-changelog t
    ;; List of items to show in the startup buffer. If nil it is disabled.
    ;; Possible values are: `recents' `bookmarks' `projects'."
-   dotspacemacs-startup-lists '(recents projects)
+   dotspacemacs-startup-lists '(recents projects bookmarks)
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
@@ -166,20 +167,25 @@ layers configuration."
   ;;   (add-hook mode-hook 'paredit-mode))
 
   ;; (golden-ratio-mode)
+  (with-eval-after-load 'comint
+    (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
+    (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
+    (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
+    (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
 
-  (defvar work-purpose-conf
-    (purpose-conf "work"
-                  :mode-purposes '((conf-unix-mode . edit)
-                                   (org-mode . org)
-                                   (python-mode . py))
-                  :regexp-purposes '(("\\.log$" . log))))
-  (purpose-set-extension-configuration :work work-purpose-conf)
-  (add-to-list 'purpose-user-name-purposes '("*Ilist*" . Ilist))
-  (purpose-compile-user-configuration)
-  (add-hook 'purpose-display-buffer-functions #'my-dedicate-repl)
-  (setq helm-display-function #'my-helm-display-buffer)
+  ;; (defvar work-purpose-conf
+  ;;   (purpose-conf "work"
+  ;;                 :mode-purposes '((conf-unix-mode . edit)
+  ;;                                  (org-mode . org)
+  ;;                                  (python-mode . py))
+  ;;                 :regexp-purposes '(("\\.log$" . log))))
+  ;; (purpose-set-extension-configuration :work work-purpose-conf)
+  ;; (add-to-list 'purpose-user-name-purposes '("*Ilist*" . Ilist))
+  ;; (purpose-compile-user-configuration)
+  ;; (add-hook 'purpose-display-buffer-functions #'my-dedicate-repl)
+  ;; (setq helm-display-function #'my-helm-display-buffer)
   (defun work-python-hook ()
-    (setq-local indent-tabs-mode t)
+    (setq-local indent-tabs-mode nil)
     (flycheck-mode -1))
   (defun make-work-settings ()
     (interactive)
@@ -248,11 +254,18 @@ layers configuration."
     (if window
         (progn
           (select-window window)
-          ;; don't know why, but it doesn't work without `switch-to-buffer'
-          (switch-to-buffer buffer t t))
+          (prog1
+              ;; don't know why, but it doesn't work without `switch-to-buffer'
+              (switch-to-buffer buffer t t)
+            ;; prevent purpose from displaying another buffer in helm's window.
+            ;; relevant for the persistent action of `helm-M-x' - without this
+            ;; the help buffer may hide the helm buffer.
+            (purpose-set-window-purpose-dedicated-p window t)))
       ;; in case the above methods weren't successful, fallback to default
       ;; helm display function
-      (funcall #'helm-default-display-buffer buffer))))
+      (prog1
+          (funcall #'helm-default-display-buffer buffer)
+        (purpose-set-window-purpose-dedicated-p nil t)))))
 
 (defvar jump-do-fn nil)
 (defun jump-do-after-jump ()

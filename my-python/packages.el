@@ -10,16 +10,9 @@
 ;;
 ;;; License: GPLv3
 
-(defvar my-python-packages
-  '(
-    ;; package my-pythons go here
-    pydoc
-    )
-  "List of all packages to install and/or initialize. Built-in packages
-which require an initialization must be listed explicitly in the list.")
+(setq my-python-packages '(pydoc))
 
-(defvar my-python-excluded-packages '()
-  "List of packages to exclude.")
+(setq my-python-excluded-packages '())
 
 (defun my-python/init-pydoc ()
   (use-package pydoc))

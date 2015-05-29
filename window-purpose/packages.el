@@ -10,17 +10,14 @@
 ;;
 ;;; License: GPLv3
 
-(defvar window-purpose-packages
-  '(window-purpose
-    imenu-list
-    let-alist)
-  "List of all packages to install and/or initialize. Built-in packages
-which require an initialization must be listed explicitly in the list.")
+(setq window-purpose-packages '(window-purpose
+                                imenu-list
+                                let-alist))
 
-(defvar window-purpose-excluded-packages
-  ;; this doesn't stop popwin package from being installed and used :-(
-  '(popwin)
-  "List of packages to exclude.")
+(setq window-purpose-excluded-packages '()
+      ;; this doesn't stop popwin package from being installed and used :-(
+      ;; '(popwin)
+      )
 
 (defvar spacemacs-repl-modes '(inferior-python-mode slime-repl-mode))
 (defvar spacemacs-right-window-width 60)
