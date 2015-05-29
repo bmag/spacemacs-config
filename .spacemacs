@@ -173,7 +173,10 @@ layers configuration."
                   :regexp-purposes '(("\\.log$" . log))))
   (purpose-set-extension-configuration :work work-purpose-conf)
   (setq helm-display-function #'my-helm-display-buffer)
-)
+  (setq dired-guess-shell-alist-user
+        '(("\\.pdf\\'" "evince")
+          ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
+          ("\\.jpg\\'" "gpicview"))))
 
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
