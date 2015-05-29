@@ -10,17 +10,15 @@
 ;;
 ;;; License: GPLv3
 
-(defvar cscope-packages
-  '(
-    ;; package cscopes go here
-    helm-cscope
-    xcscope
-    )
-  "List of all packages to install and/or initialize. Built-in packages
-which require an initialization must be listed explicitly in the list.")
+(setq cscope-packages '(evil-jumper
+                        helm-cscope
+                        xcscope))
 
-(defvar cscope-excluded-packages '()
-  "List of packages to exclude.")
+(setq cscope-excluded-packages '())
+
+(defun cscope/init-evil-jump ()
+  (defadvice helm-cscope-find-this-symbol (before cscope/goto activate)
+    (evil-jumper--push)))
 
 (defun cscope/init-helm-cscope ()
   (use-package helm-cscope

@@ -10,17 +10,9 @@
 ;;
 ;;; License: GPLv3
 
-(defvar my-python-pre-extensions
-  '(
-    ;; pre extension my-pythons go here
-    )
-  "List of all extensions to load before the packages.")
+(setq my-python-pre-extensions '())
 
-(defvar my-python-post-extensions
-  '(
-    ;; post extension my-pythons go here
-    )
-  "List of all extensions to load after the packages.")
+(setq my-python-post-extensions '())
 
 ;; For each extension, define a function my-python/init-<extension-my-python>
 ;;

@@ -10,17 +10,14 @@
 ;;
 ;;; License: GPLv3
 
-(defvar window-purpose-packages
-  '(window-purpose
-    imenu-list
-    let-alist)
-  "List of all packages to install and/or initialize. Built-in packages
-which require an initialization must be listed explicitly in the list.")
+(setq window-purpose-packages '(window-purpose
+                                imenu-list
+                                let-alist))
 
-(defvar window-purpose-excluded-packages
-  ;; this doesn't stop popwin package from being installed and used :-(
-  '(popwin)
-  "List of packages to exclude.")
+(setq window-purpose-excluded-packages '()
+      ;; this doesn't stop popwin package from being installed and used :-(
+      ;; '(popwin)
+      )
 
 (defvar spacemacs-repl-modes '(inferior-python-mode slime-repl-mode))
 (defvar spacemacs-right-window-width 60)
@@ -48,7 +45,7 @@ which require an initialization must be listed explicitly in the list.")
                        :key 'car))
       (push '(repl purpose-display-reuse-window-buffer
                    purpose-display-reuse-window-purpose
-                   spacemacs/display-repl-at-right)
+                   spacemacs/display-repl-at-bottom)
             purpose-special-action-sequences)
 
       (setq purpose-default-layout-file
@@ -61,7 +58,7 @@ which require an initialization must be listed explicitly in the list.")
       ;; "glue" golden-ration and window-purpose
       (purpose-x-golden-ratio-setup)
       ;; enable magit purpose-conf
-      (purpose-x-magit-multi-on)
+      (purpose-x-magit-single-on)
 
       ;; bug - using `purpose-set-window-purpose' doesn't trigger all of
       ;; setup actions needed by spacemacs.

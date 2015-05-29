@@ -10,12 +10,9 @@
 ;;
 ;;; License: GPLv3
 
-(defvar window-purpose-pre-extensions '()
-  "List of all extensions to load before the packages.")
+(setq window-purpose-pre-extensions '())
 
-(defvar window-purpose-post-extensions
-  '(popwin)
-  "List of all extensions to load after the packages.")
+(setq window-purpose-post-extensions '(popwin))
 
 (defun window-purpose/init-popwin ()
   ;; tried to force spacemacs to load slightly modified popwin, but was
