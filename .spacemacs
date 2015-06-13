@@ -1,4 +1,4 @@
-;; -*- mode: dotspacemacs -*-
+;; -*- mode: emacs-lisp -*-
 ;; This file is loaded by Spacemacs at startup.
 ;; It must be stored in your home directory.
 
@@ -12,40 +12,46 @@
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     ;; --------------------------------------------------------
-     ;; Example of useful layers you may want to use right away
-     ;; Uncomment a layer name and press C-c C-c to install it
-     ;; --------------------------------------------------------
-     (auto-completion :variables
-                      auto-completion-enable-company-yasnippet nil)
+     ;; (auto-completion :variables
+     ;;                  auto-completion-enable-company-yasnippet nil)
+     auto-completion
      ;; better-defaults
-     (git :variables
-          git-gutter-use-fringe t)
+     ;; (git :variables
+     ;;      git-gutter-use-fringe t)
+     git
      markdown
      org
      syntax-checking
 
      ;; additional contrib layers
+     ;; c-c++
      emacs-lisp
      python
      smex
      themes-megapack
      perspectives
+     eyebrowse                          ;
+     window-purpose
      php
      slime
-     gtags
+     ;; gtags
+     cscope
 
      ;; private layers
      my-python
-     cscope
-     ;; window-purpose
+     ;; winconf
      )
+   ;; List of additional packages that will be installed wihout being
+   ;; wrapped in a layer. If you need some configuration for these
+   ;; packages then consider to create a layer, you can also put the
+   ;; configuration in `dotspacemacs/config'.
+   dotspacemacs-additional-packages '(sr-speedbar window-purpose imenu-list let-alist)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '(php-extras)
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
    ;; are declared in a layer which is not a member of
    ;; the list `dotspacemacs-configuration-layers'
-   dotspacemacs-delete-orphan-packages nil))
+   dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -141,8 +147,14 @@ before layers configuration."
    dotspacemacs-smooth-scrolling t
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    dotspacemacs-smartparens-strict-mode nil
+   ;; Select a scope to highlight delimiters. Possible value is `all',
+   ;; `current' or `nil'. Default is `all'
+   dotspacemacs-highlight-delimiters 'all
    ;; If non nil advises quit functions to keep server open when quitting.
    dotspacemacs-persistent-server nil
+   ;; List of search tool executable names. Spacemacs uses the first installed
+   ;; tool of the list. Supported tools are `ag', `pt', `ack' and `grep'.
+   dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
    ;; The default package repository used if no explicit repository has been
    ;; specified with an installed package.
    ;; Not used for now.
@@ -155,8 +167,7 @@ before layers configuration."
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
     (defadvice spacemacs/post-theme-init (after my-post-theme-init-adv activate)
       "Call `my-post-theme-init'."
-      (my-post-theme-init theme)))
-  )
+      (my-post-theme-init theme))))
 
 (defun dotspacemacs/config ()
   "Configuration function.
@@ -167,12 +178,25 @@ layers configuration."
   ;;   (add-hook mode-hook 'paredit-mode))
 
   ;; (golden-ratio-mode)
+
+  (remove-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
+  (remove-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
+  (defun display-helm-at-bottom (buffer)
+    (let ((display-buffer-alist (list spacemacs-helm-display-buffer-regexp)))
+      (helm-default-display-buffer buffer)))
+  (setq helm-display-function 'display-helm-at-bottom)
+
+  ;; (add-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
+  ;; (add-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
+  ;; (setq helm-display-function 'helm-default-display-buffer)
+
   (with-eval-after-load 'comint
     (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
 
+  (setq frame-title-format "Spacemacs")
   (setq dired-guess-shell-alist-user
         '(("\\.pdf\\'" "evince")
           ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
@@ -224,6 +248,11 @@ layers configuration."
      '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
      '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
      '(evil-search-highlight-persist-highlight-face ((t (:background "orange3"))))
+     '(company-tooltip ((t (:foreground "gainsboro" :background "dim gray"))))
+     '(company-tooltip-annotation ((t (:foreground "sky blue" :inherit (company-tooltip)))))
+     '(company-tooltip-selection ((t (:background "steel blue" :inherit (company-tooltip)))))
+     '(company-scrollbar-fg ((t (:background "black" :inherit (company-tooltip)))))
+     '(company-scrollbar-bg ((t (:background "dark gray" :inherit (company-tooltip)))))
     ))))
 
 ;; taken from https://github.com/nex3/perspective-el/pull/43/files
