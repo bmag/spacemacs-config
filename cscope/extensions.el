@@ -10,17 +10,9 @@
 ;;
 ;;; License: GPLv3
 
-(defvar cscope-pre-extensions
-  '(
-    ;; pre extension cscopes go here
-    )
-  "List of all extensions to load before the packages.")
+(setq cscope-pre-extensions '())
 
-(defvar cscope-post-extensions
-  '(
-    ;; post extension cscopes go here
-    )
-  "List of all extensions to load after the packages.")
+(setq cscope-post-extensions '())
 
 ;; For each extension, define a function cscope/init-<extension-cscope>
 ;;
