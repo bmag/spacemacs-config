@@ -12,8 +12,6 @@
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
-     ;; (auto-completion :variables
-     ;;                  auto-completion-enable-company-yasnippet nil)
      auto-completion
      ;; better-defaults
      ;; (git :variables
@@ -31,15 +29,22 @@
      clojure
      emacs-lisp
      python
+     php
+     markdown
+     org
+     sql
+
+     slime
+     shell
+     gtags
+     cscope
+
      smex
      themes-megapack
+
      perspectives
      eyebrowse                          ;
      window-purpose
-     php
-     slime
-     gtags
-     cscope
 
      ;; private layers
      sr-speedbar
@@ -91,7 +96,9 @@ before layers configuration."
                          ;; monokai
                          ;; zenburn
                          tangotango
-                         solarized-light
+                         material
+                         material-light
+                         leuven
                          )
    ;; If non nil the cursor color matches the state color.
    dotspacemacs-colorize-cursor-according-to-state t
@@ -178,26 +185,7 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
-  ;; (setq browse-url-browser-function 'browse-url-firefox)
-  ;; (dolist (mode-hook '(emacs-lisp-mode-hook python-mode-hook))
-  ;;   (add-hook mode-hook 'paredit-mode))
-
-  ;; (golden-ratio-mode)
-  (evil-leader/set-key "op" #'spacemacs/sr-speedbar-show-or-hide)
-
-  (remove-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
-  (remove-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
-  (defun display-helm-at-bottom (buffer)
-    (let ((display-buffer-alist (list spacemacs-helm-display-help-buffer-regexp
-                                      spacemacs-helm-display-buffer-regexp)))
-      (helm-default-display-buffer buffer)))
-  (setq helm-display-function 'display-helm-at-bottom)
-
-  ;; (add-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
-  ;; (add-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
-  ;; (setq helm-display-function 'helm-default-display-buffer)
   (setq company-idle-delay 0.01)
-
   (with-eval-after-load 'comint
     (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
@@ -276,17 +264,29 @@ layers configuration."
           ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
           ("\\.jpg\\'" "gpicview")))
 
-  ;; (defvar work-purpose-conf
-  ;;   (purpose-conf "work"
-  ;;                 :mode-purposes '((conf-unix-mode . edit)
-  ;;                                  (org-mode . org)
-  ;;                                  (python-mode . py))
-  ;;                 :regexp-purposes '(("\\.log$" . log))))
-  ;; (purpose-set-extension-configuration :work work-purpose-conf)
-  ;; (add-to-list 'purpose-user-name-purposes '("*Ilist*" . Ilist))
-  ;; (purpose-compile-user-configuration)
-  ;; (add-hook 'purpose-display-buffer-functions #'my-dedicate-repl)
-  ;; (setq helm-display-function #'my-helm-display-buffer)
+  (defalias 'my-pop-repl-python #'python-start-or-switch-repl)
+  (defalias 'my-pop-repl-elisp #'ielm)
+
+  (with-eval-after-load 'window-purpose
+    (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
+    (cl-pushnew '(inferior-python-mode . repl) purpose-user-mode-purposes
+                :key #'car)
+    (cl-pushnew '(inferior-emacs-lisp-mode . repl) purpose-user-mode-purposes
+                :key #'car)
+    (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
+                :key #'car :test #'equal)
+    (purpose-compile-user-configuration)
+    (cl-pushnew '(repl purpose-display-reuse-window-buffer
+                       purpose-display-reuse-window-purpose
+                       purpose-display-at-bottom)
+                purpose-special-action-sequences
+                :key #'car)
+    (setq purpose-display-at-bottom-height 0.25)
+    (add-hook 'purpose-display-buffer-functions #'my-dedicate-repl)
+
+    (when (require 'window-purpose-x nil t)
+      (purpose-x-magit-single-on)))
+
   (defun work-python-hook ()
     (setq-local indent-tabs-mode nil)
     (flycheck-mode -1))
@@ -298,10 +298,21 @@ layers configuration."
   (defun toggle-tabs-mode ()
     (interactive)
     (setq indent-tabs-mode (not indent-tabs-mode)))
+
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   (evil-leader/set-key-for-mode 'python-mode
     "mhj" 'jump-do-anaconda-view-doc
-    "mhr" 'jump-do-anaconda-usages))
+    "mhr" 'jump-do-anaconda-usages
+    "m'" 'my-pop-repl-python)
+  (evil-leader/set-key-for-mode 'inferior-python-mode
+    "m'" 'delete-window)
+  (evil-leader/set-key-for-mode 'emacs-lisp-mode
+    "m'" 'my-pop-repl-elisp)
+  (evil-leader/set-key-for-mode 'inferior-emacs-lisp-mode
+    "m'" 'delete-window)
+  (evil-leader/set-key
+    "ob" 'my-persp-purpose-switch-buffer
+    "oB" 'my-persp-some-purpose-switch-buffer))
 
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
@@ -309,12 +320,13 @@ layers configuration."
    ((eql theme 'tangotango)
     (custom-theme-set-faces
      'tangotango
-     '(diff-hl-insert ((t (:foreground "green4" :background "#335533"))))
      '(diff-hl-delete ((t (:foreground "red3" :background "#553333"))))
+     '(diff-hl-insert ((t (:foreground "green4" :background "#335533"))))
+     '(diff-hl-change ((t (:foreground "blue3" :background "#333355"))))
      '(spacemacs-mode-line-flycheck-info-face ((t (:foreground "dodger blue" :box (:line-width 1 :style released-button)))))
      '(spacemacs-mode-line-flycheck-warning-face ((t (:foreground "#edd400" :box (:line-width 1 :style released-button)))))
      '(spacemacs-mode-line-flycheck-error-face ((t (:foreground "tomato" :box (:line-width 1 :style released-button)))))
-     '(rainbow-delimiters-depth-1-face ((t (:foreground "#729fcf"))))
+     '(rainbow-delimiters-depth-1-face ((t (:foreground "#729fcf")))) ; hello
      '(rainbow-delimiters-depth-2-face ((t (:foreground "sandy brown"))))
      '(rainbow-delimiters-depth-3-face ((t (:foreground "green yellow"))))
      '(rainbow-delimiters-depth-4-face ((t (:foreground "hot pink"))))
@@ -323,7 +335,6 @@ layers configuration."
      '(rainbow-delimiters-depth-7-face ((t (:foreground "light green"))))
      '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
      '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
-     '(evil-search-highlight-persist-highlight-face ((t (:background "orange3"))))
      '(company-tooltip ((t (:foreground "gainsboro" :background "dim gray"))))
      '(company-tooltip-annotation ((t (:foreground "sky blue" :inherit (company-tooltip)))))
      '(company-tooltip-selection ((t (:background "steel blue" :inherit (company-tooltip)))))
@@ -357,26 +368,6 @@ layers configuration."
           (set-frame-selected-window nil (get-buffer-window buffer))
         (switch-to-buffer buffer)))))
 
-(defun my-helm-display-buffer (buffer)
-  (let ((window (or (purpose-display-reuse-window-buffer buffer nil)
-                    (purpose-display-reuse-window-purpose buffer nil)
-                    (purpose-display-at-bottom buffer nil 0.3))))
-    (if window
-        (progn
-          (select-window window)
-          (prog1
-              ;; don't know why, but it doesn't work without `switch-to-buffer'
-              (switch-to-buffer buffer t t)
-            ;; prevent purpose from displaying another buffer in helm's window.
-            ;; relevant for the persistent action of `helm-M-x' - without this
-            ;; the help buffer may hide the helm buffer.
-            (purpose-set-window-purpose-dedicated-p window t)))
-      ;; in case the above methods weren't successful, fallback to default
-      ;; helm display function
-      (prog1
-          (funcall #'helm-default-display-buffer buffer)
-        (purpose-set-window-purpose-dedicated-p nil t)))))
-
 (defvar jump-do-fn nil)
 (defun jump-do-after-jump ()
   (remove-hook 'ace-jump-mode-end-hook #'jump-do-after-jump)
@@ -394,6 +385,35 @@ layers configuration."
      (jump-do ,fn)))
 (define-jump-do-command jump-do-anaconda-view-doc #'anaconda-mode-view-doc)
 (define-jump-do-command jump-do-anaconda-usages #'anaconda-mode-usages)
+
+
+(with-eval-after-load 'helm-buffers
+  (with-eval-after-load 'perspective
+    (defclass my-perpspective-purpose-source (helm-source-buffers)
+      ((buffer-list
+        :initform (lambda ()
+                    (cl-loop for buffer in (purpose-buffers-with-purpose window-purpose--current-purpose)
+                             if (and (not (eql buffer (current-buffer)))
+                                     (memq buffer (persp-buffers persp-curr)))
+                             collect (buffer-name buffer))))))
+
+    (defun my-persp-purpose-switch-buffer (&optional purpose)
+      (interactive)
+      (setq window-purpose--current-purpose
+            (or purpose (purpose-buffer-purpose (current-buffer))))
+      (helm :buffer "*helm persp-purpose*"
+            :prompt "Buffer: "
+            :sources (helm-make-source "Persp-Purpose buffers" 'my-perpspective-purpose-source)))
+
+    (defun my-persp-some-purpose-switch-buffer ()
+      "Choose a purpose, then switch to a buffer with that purpose."
+      (interactive)
+      (my-persp-purpose-switch-buffer
+       (purpose-read-purpose "Purpose: "
+                             ;; don't show purposes that have no buffers
+                             (cl-delete-if-not #'purpose-buffers-with-purpose
+                                               (purpose-get-all-purposes))
+                             t)))))
 
 
 ;; Do not write anything past this comment. This is where Emacs will
