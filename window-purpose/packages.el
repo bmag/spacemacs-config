@@ -1,7 +1,7 @@
 ;;; packages.el --- window-purpose Layer packages File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
-;; Copyright (c) 2015 Bar Magal & Contributors
+;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
 ;;
 ;; Author: Sylvain Benner <sylvain.benner@gmail.com>
 ;; URL: https://github.com/syl20bnr/spacemacs
@@ -14,69 +14,120 @@
                                 imenu-list
                                 let-alist))
 
-(setq window-purpose-excluded-packages '()
-      ;; this doesn't stop popwin package from being installed and used :-(
-      ;; '(popwin)
-      )
-
-(defvar spacemacs-repl-modes '(inferior-python-mode slime-repl-mode))
-(defvar spacemacs-right-window-width 60)
-(defvar spacemacs-bottom-window-height 12)
+(setq window-purpose-excluded-packages '())
 
 (defun window-purpose/init-window-purpose ()
   (use-package window-purpose
+    :init
+    ;; overriding `purpose-mode-map' with empty keymap, so it doesn't conflict
+    ;; with original `C-x C-f', `C-x b', etc. and `semantic' key bindings. must
+    ;; be done before `window-purpose' is loaded
+    (setq purpose-mode-map (make-sparse-keymap))
     :config
-    (progn
-      (defvar window-purpose-spacemacs-conf
-        (purpose-conf "spacemacs"
-                      :name-purposes `((,spacemacs-buffer-name . home))
-                      :mode-purposes '((inferior-python-mode . repl)
-                                       (slime-repl-mode . repl))))
-      (dolist (mode spacemacs-repl-modes)
-        (push `(,mode . repl) (oref window-purpose-spacemacs-conf :mode-purposes))
-        (evil-leader/set-key-for-mode mode
-          "mRR" 'spacemacs/move-repl-to-right
-          "mRB" 'spacemacs/move-repl-to-bottom))
-      (purpose-set-extension-configuration :spacemacs
-                                           window-purpose-spacemacs-conf)
+    (evil-leader/set-key
+      "rb" 'window-purpose/switch-buffer-with-purpose ; 'purpose-switch-buffer-with-purpose
+      "rd" 'purpose-toggle-window-purpose-dedicated
+      "rB" 'spacemacs/helm-mini-ignore-purpose
+      "rD" 'purpose-delete-non-dedicated-windows
+      "rp" 'window-purpose/switch-buffer-with-some-purpose ; 'purpose-switch-buffer-with-some-purpose
+      "rP" 'purpose-set-window-purpose)
+    (setq purpose-preferred-prompt 'helm)
+    (defalias 'spacemacs/helm-mini-ignore-purpose
+      (without-purpose-command #'helm-mini)
+      "Same as `helm-mini', but disable window-purpose while this command executes.")
 
-      (setq purpose-special-action-sequences
-            (cl-delete 'repl purpose-special-action-sequences
-                       :key 'car))
-      (push '(repl purpose-display-reuse-window-buffer
-                   purpose-display-reuse-window-purpose
-                   spacemacs/display-repl-at-bottom)
-            purpose-special-action-sequences)
+    (defvar window-purpose--dedicated-windows nil)
 
-      (setq purpose-default-layout-file
-            (concat
-             (file-name-as-directory configuration-layer-private-directory)
-             (file-name-as-directory "layouts")))
+    (defadvice popwin:create-popup-window (before window-purpose/save-dedicated-windows)
+      (setq window-purpose--dedicated-windows
+            (cl-loop for window in (window-list)
+                     if (purpose-window-purpose-dedicated-p window)
+                     collect (window-buffer window))))
 
-      (purpose-mode)
+    (defadvice popwin:create-popup-window (after window-purpose/restore-dedicated-windows)
+      (cl-loop for buffer in window-purpose--dedicated-windows
+               do (cl-loop for window in (get-buffer-window-list buffer)
+                           do (purpose-set-window-purpose-dedicated-p window t))))
 
-      ;; "glue" golden-ration and window-purpose
-      (purpose-x-golden-ratio-setup)
-      ;; enable magit purpose-conf
-      (purpose-x-magit-single-on)
+    (defun window-purpose/sync-advices ()
+      (if purpose-mode
+          (progn
+            (ad-enable-advice 'popwin:create-popup-window
+                              'before 'window-purpose/save-dedicated-windows)
+            (ad-enable-advice 'popwin:create-popup-window
+                              'after 'window-purpose/restore-dedicated-windows)
+            (ad-update 'popwin:create-popup-window)
+            (ad-activate 'popwin:create-popup-window))
+        (ad-disable-advice 'popwin:create-popup-window
+                           'before 'window-purpose/save-dedicated-windows)
+        (ad-disable-advice 'popwin:create-popup-window
+                           'after 'window-purpose/restore-dedicated-windows)
+        (ad-update 'popwin:create-popup-window)))
+    (add-hook 'purpose-mode-hook #'window-purpose/sync-advices)
 
-      ;; bug - using `purpose-set-window-purpose' doesn't trigger all of
-      ;; setup actions needed by spacemacs.
-      ;; not a problem if there already is a buffer with the chosen purpose
-      ;; (spacemacs setup for the buffer already happened)
-      (evil-leader/set-key
-        "rd" 'purpose-toggle-window-purpose-dedicated
-        "rb" 'purpose-switch-buffer-with-purpose
-        "rB" 'switch-buffer-without-purpose
-        "rl" 'purpose-load-window-layout
-        "rL" 'purpose-load-frame-layout
-        "rs" 'purpose-save-window-layout
-        "rS" 'purpose-save-frame-layout
-        "rn" 'purpose-delete-non-dedicated-windows
-        "rt" 'purpose-reset-window-layout
-        "rT" 'purpose-reset-frame-layout
-        "rp" 'purpose-switch-buffer-with-some-purpose
-        "rP" 'purpose-set-window-purpose))))
+    (eval-after-load 'helm-buffers
+      '(progn
+         (defvar window-purpose--current-purpose 'edit)
 
-(defun window-purpose/init-imenu-list ()
-  (use-package imenu-list))
+         (defclass helm-source-purpose-buffers (helm-source-buffers)
+           ((buffer-list :initform
+                         (lambda ()
+                           (mapcar #'buffer-name
+                                   (delq (current-buffer)
+                                         (purpose-buffers-with-purpose window-purpose--current-purpose)))))))
+
+         (defvar helm-source-purpose-buffers-list
+           (helm-make-source "Purpose buffers" 'helm-source-purpose-buffers))
+
+         (defun window-purpose/switch-buffer-with-purpose (&optional purpose)
+           "Switch to buffer, choose from buffers with purpose PURPOSE.
+PURPOSE defaults to the purpose of the current buffer."
+           (interactive)
+           (setq window-purpose--current-purpose
+                 (or purpose (purpose-buffer-purpose (current-buffer))))
+           (helm :sources 'helm-source-purpose-buffers-list
+                 :buffer "*helm purpose*"
+                 :prompt "Buffer: "))
+
+         (defun window-purpose/switch-buffer-with-some-purpose ()
+           "Choose a purpose, then switch to a buffer with that purpose."
+           (interactive)
+           (window-purpose/switch-buffer-with-purpose
+            (purpose-read-purpose "Purpose: "
+                                  ;; don't show purposes that have no buffers
+                                  (cl-delete-if-not #'purpose-buffers-with-purpose
+                                                    (purpose-get-all-purposes))
+                                  t)))))
+
+    (purpose-mode)
+    (purpose-x-golden-ratio-setup)))
+
+(defun window-purpose/post-init-window-purpose ()
+  ;; *LV* buffer is used by corelv.el
+  (push "^\\*LV\\*$" purpose-action-function-ignore-buffer-names)
+
+  (eval-after-load 'eyebrowse
+    '(progn
+       (defvar window-purpose--eyebrowse-new-workspace eyebrowse-new-workspace)
+
+       (defun window-purpose/new-workspace ()
+         "Create a new eyebrowse workspace."
+         ;; partially copied from `eyebrowse-switch-to-window-config'
+         (cond
+          ((stringp window-purpose--eyebrowse-new-workspace)
+           (switch-to-buffer (get-buffer-create window-purpose--eyebrowse-new-workspace)))
+          ((functionp window-purpose--eyebrowse-new-workspace)
+           (funcall window-purpose--eyebrowse-new-workspace))
+          (t (switch-to-buffer "*scratch*")))
+
+         ;; in case opening the new buffer splitted the frame (e.g.
+         ;; `eyebrowse-switch-to-window-config' was called from a purpose-dedicated
+         ;; buffer)
+         (delete-other-windows))
+
+       (defun window-purpose/sync-eyebrowse ()
+         (if purpose-mode
+             (setq eyebrowse-new-workspace #'window-purpose/new-workspace)
+           (setq eyebrowse-new-workspace window-purpose--eyebrowse-new-workspace)))
+       (add-hook 'purpose-mode-hook #'window-purpose/sync-eyebrowse)
+       (window-purpose/sync-eyebrowse))))

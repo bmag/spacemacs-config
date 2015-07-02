@@ -19,12 +19,16 @@
      ;; (git :variables
      ;;      git-gutter-use-fringe t)
      git
+     version-control
      markdown
      org
      syntax-checking
+     shell
+     ;; ycmd
 
      ;; additional contrib layers
      ;; c-c++
+     clojure
      emacs-lisp
      python
      smex
@@ -34,10 +38,11 @@
      window-purpose
      php
      slime
-     ;; gtags
+     gtags
      cscope
 
      ;; private layers
+     sr-speedbar
      my-python
      ;; winconf
      )
@@ -178,17 +183,20 @@ layers configuration."
   ;;   (add-hook mode-hook 'paredit-mode))
 
   ;; (golden-ratio-mode)
+  (evil-leader/set-key "op" #'spacemacs/sr-speedbar-show-or-hide)
 
   (remove-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
   (remove-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
   (defun display-helm-at-bottom (buffer)
-    (let ((display-buffer-alist (list spacemacs-helm-display-buffer-regexp)))
+    (let ((display-buffer-alist (list spacemacs-helm-display-help-buffer-regexp
+                                      spacemacs-helm-display-buffer-regexp)))
       (helm-default-display-buffer buffer)))
   (setq helm-display-function 'display-helm-at-bottom)
 
   ;; (add-hook 'helm-after-initialize-hook 'spacemacs//display-helm-at-bottom)
   ;; (add-hook 'helm-cleanup-hook 'spacemacs//restore-previous-display-config)
   ;; (setq helm-display-function 'helm-default-display-buffer)
+  (setq company-idle-delay 0.01)
 
   (with-eval-after-load 'comint
     (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
@@ -196,6 +204,72 @@ layers configuration."
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
 
+  (with-eval-after-load 'window-purpose-x
+    (purpose-set-extension-configuration
+     :popup-repls
+     (purpose-conf "popup-repls"
+                   :mode-purposes '((inferior-python-mode . repl)
+                                    (inferior-emacs-lisp-mode . repl))))
+    (purpose-x-popupify-purpose 'repl)
+
+    (defun dedicate-repl (window)
+      (when (eql (purpose-window-purpose window) 'repl)
+        (purpose-set-window-purpose-dedicated-p window t)))
+    (add-hook 'purpose-display-buffer-functions #'dedicate-repl)
+
+    (defun open-recent-repl ()
+      "Select open REPL window, or pop to recently used REPL."
+      (interactive)
+      (let ((window (car (purpose-windows-with-purpose 'repl))))
+        (if window
+            (select-window window)
+          (let ((buffer (car (purpose-buffers-with-purpose 'repl))))
+            (if buffer
+                (pop-to-buffer buffer)
+              (user-error "No REPL buffer exists"))))))
+
+    (evil-leader/set-key-for-mode 'python-mode
+      "m'" #'python-start-or-switch-repl)
+    (evil-leader/set-key-for-mode 'emacs-lisp-mode
+      "m'" #'ielm)
+    (evil-leader/set-key-for-mode 'dired-mode
+      "m'" #'open-recent-repl)
+    (dolist (repl-mode '(inferior-emacs-lisp-mode inferior-python-mode))
+      (evil-leader/set-key-for-mode repl-mode
+        "m'" #'delete-window)))
+
+  ;;; display-buffer settings for popup repls
+  (cl-pushnew '("\\*Python\\(\\[.*\\]\\)?\\*" display-buffer-in-side-window)
+              display-buffer-alist
+              :test #'equal)
+  (cl-pushnew '("\\*ielm\\*" display-buffer-in-side-window)
+              display-buffer-alist
+              :test #'equal)
+
+  (defun pop-ielm ()
+    (interactive)
+    ;; ugly, but `ielm' is the only way to create the buffer, and it can't be
+    ;; stopped from calling `switch-to-buffer'
+    (save-window-excursion (ielm))
+    (pop-to-buffer "*ielm*"))
+  (evil-leader/set-key-for-mode 'emacs-lisp-mode
+    "m'" #'pop-ielm)
+
+  (defvar repl-modes '(inferior-python-mode inferior-emacs-lisp-mode))
+  (defun open-recent-repl-1 ()
+    (interactive)
+    (let ((buffer (cl-loop for buffer in (buffer-list)
+                           if (with-current-buffer buffer
+                                (memq major-mode repl-modes))
+                           return buffer)))
+      (if buffer
+          (pop-to-buffer buffer)
+        (user-error "No REPL buffer exists"))))
+  (evil-leader/set-key-for-mode 'dired-mode
+    "m'" #'open-recent-repl-1)
+
+
+  (setq ycmd-server-command `("python" ,(expand-file-name "~/src/ycmd/ycmd/__main__.py")))
   (setq frame-title-format "Spacemacs")
   (setq dired-guess-shell-alist-user
         '(("\\.pdf\\'" "evince")
@@ -235,6 +309,8 @@ layers configuration."
    ((eql theme 'tangotango)
     (custom-theme-set-faces
      'tangotango
+     '(diff-hl-insert ((t (:foreground "green4" :background "#335533"))))
+     '(diff-hl-delete ((t (:foreground "red3" :background "#553333"))))
      '(spacemacs-mode-line-flycheck-info-face ((t (:foreground "dodger blue" :box (:line-width 1 :style released-button)))))
      '(spacemacs-mode-line-flycheck-warning-face ((t (:foreground "#edd400" :box (:line-width 1 :style released-button)))))
      '(spacemacs-mode-line-flycheck-error-face ((t (:foreground "tomato" :box (:line-width 1 :style released-button)))))
@@ -319,9 +395,6 @@ layers configuration."
 (define-jump-do-command jump-do-anaconda-view-doc #'anaconda-mode-view-doc)
 (define-jump-do-command jump-do-anaconda-usages #'anaconda-mode-usages)
 
-(defun my-dedicate-repl (window)
-  (when (eql (purpose-window-purpose window) 'repl)
-    (purpose-set-window-purpose-dedicated-p window t)))
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
