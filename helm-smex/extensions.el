@@ -1,4 +1,4 @@
-;;; extensions.el --- cscope Layer extensions File for Spacemacs
+;;; extensions.el --- helm-smex Layer extensions File for Spacemacs
 ;;
 ;; Copyright (c) 2012-2014 Sylvain Benner
 ;; Copyright (c) 2014-2015 Sylvain Benner & Contributors
@@ -10,13 +10,19 @@
 ;;
 ;;; License: GPLv3
 
-(setq cscope-pre-extensions '())
+(setq helm-smex-pre-extensions
+      '(
+        ;; pre extension names go here
+        ))
 
-(setq cscope-post-extensions '())
+(setq helm-smex-post-extensions
+      '(
+        ;; post extension names go here
+        ))
 
-;; For each extension, define a function cscope/init-<extension-cscope>
+;; For each extension, define a function helm-smex/init-<extension-name>
 ;;
-;; (defun cscope/init-my-extension ()
+;; (defun helm-smex/init-my-extension ()
 ;;   "Initialize my extension"
 ;;   )
 ;;
