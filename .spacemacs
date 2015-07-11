@@ -45,7 +45,7 @@
      helm-smex
      ;; winconf
      )
-   dotspacemacs-additional-packages '(sr-speedbar window-purpose imenu-list let-alist)
+   dotspacemacs-additional-packages '(sr-speedbar window-purpose imenu-list let-alist f)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages t))
 
@@ -186,6 +186,13 @@ layers configuration."
     (interactive)
     (setq indent-tabs-mode (not indent-tabs-mode)))
 
+  (define-key helm-map (kbd "C-M-h") #'help-command)
+
+  (setcdr evil-insert-state-map nil)
+  (define-key evil-insert-state-map [escape] #'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
+  (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
+
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc
@@ -261,6 +268,61 @@ layers configuration."
     (helm :buffer "*helm-my-buffers*"
           :prompt "Buffer: "
           :sources (helm-make-source "My buffers" 'my-buffers-source))))
+
+(with-eval-after-load 'helm-source
+  (with-eval-after-load 'smex
+    (defvar helm-smex-source--cache (make-hash-table :test #'eq))
+    (defvar helm-smex-source--candidates nil)
+    (defun helm-smex-source--smex-score-no-cache (command)
+      (or (cdr (car (cl-member (symbol-name command) smex-cache :key #'car :test #'string=)))
+          0))
+    (defun helm-smex-source--smex-score (command)
+      (or (gethash command helm-smex-source--cache)
+          (puthash command
+                   (helm-smex-source--smex-score-no-cache command)
+                   helm-smex-source--cache)))
+    (defun helm-smex-source--sort-by-smex (cand1 cand2)
+      (> (helm-smex-source--smex-score (intern-soft cand1))
+         (helm-smex-source--smex-score (intern-soft cand2))))
+    (defclass helm-smex-source (helm-source-sync)
+      ((init :initform (lambda ()
+                         ;; (smex-rebuild-cache)
+                         (clrhash helm-smex-source--cache)
+                         (setq helm-smex-source--candidates (smex-convert-for-ido smex-cache))))
+       (candidates :initform 'helm-smex-source--candidates)
+       (match :initform #'helm-fuzzy-match)
+       (filtered-candidate-transformer
+        :initform (lambda (candidates source)
+                    (sort candidates #'helm-smex-source--sort-by-smex)))))
+    (defun helm-smex ()
+      (interactive)
+      (let ((command-name (helm :buffer "*helm-smex*" :sources (helm-make-source "Smex" 'helm-smex-source))))
+        (when command-name
+          (unwind-protect
+              (execute-extended-command current-prefix-arg command-name)
+            (smex-rank (intern-soft command-name))))))
+    (evil-leader/set-key ":" #'helm-smex)
+    (global-set-key (kbd "M-x") #'helm-smex)))
+;; ;;; Source: https://github.com/wasamasa/dotemacs/blob/master/unpublished/helm-smex.el
+;; (defun helm-smex-items ()
+;;   (smex-rebuild-cache)
+;;   (smex-convert-for-ido smex-cache))
+
+;; (defun helm-smex-execute-command (command)
+;;   (let ((prefix-arg current-prefix-arg))
+;;     (command-execute command 'record)
+;;     (smex-rank command)))
+
+;; (setq helm-smex-source
+;;       '((name . "M-x")
+;;         (candidates . helm-smex-items)
+;;         (coerce . intern)
+;;         (action ("smex" . (helm-smex-execute-command)))))
+
+;; (defun helm-smex ()
+;;   (interactive)
+;;   (helm :sources 'helm-smex-source :buffer "*helm-smex*"))
+;; ;;; end of source
 
 
 ;; Do not write anything past this comment. This is where Emacs will
