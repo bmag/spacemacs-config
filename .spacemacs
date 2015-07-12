@@ -59,9 +59,9 @@ before layers configuration."
    dotspacemacs-startup-banner 'official
    dotspacemacs-always-show-changelog t
    dotspacemacs-startup-lists '(recents projects)
-   dotspacemacs-themes '(tangotango
-                         material
-                         material-light
+   dotspacemacs-themes '(spacemacs-dark
+                         spacemacs-light
+                         tangotango
                          leuven)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Source Code Pro"
@@ -209,7 +209,7 @@ layers configuration."
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
   (cond
-   ((eql theme 'tangotango)
+   ((eq theme 'tangotango)
     (custom-theme-set-faces
      'tangotango
      '(diff-hl-delete ((t (:foreground "red3" :background "#553333"))))
@@ -234,8 +234,18 @@ layers configuration."
      '(company-scrollbar-bg ((t (:background "dark gray" :inherit (company-tooltip)))))
      '(helm-selection ((t (:background "dim gray" :distant-foreground "white"))))
      '(helm-source-header ((t (:foreground "white" :box (:line-width 2 :color "grey75" :style released-button) :weight bold :height 1.1 :family "Sans Serif"))))
-     '(helm-buffer-process ((t (:foreground "light salmon"))))
-    ))))
+     '(helm-buffer-process ((t (:foreground "light salmon"))))))
+   ((eq theme 'spacemacs-dark)
+    (let ((war "#dc752f")
+          (inf "#2f96dc")
+          (green "#67b11d")
+          (type "SpringGreen3"))
+      (custom-theme-set-faces
+       'spacemacs-dark
+       `(font-lock-type-face ((t (:foreground ,type :bold t))))
+       `(diff-hl-delete ((t (:foreground ,war :background "#361800"))))
+       `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
+       `(diff-hl-change ((t (:foreground ,inf :background "#001836")))))))))
 
 
 (with-eval-after-load 'helm-buffers
