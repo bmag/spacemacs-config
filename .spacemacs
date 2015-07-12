@@ -28,7 +28,7 @@
      ;; sql
 
      slime
-     shell
+     (shell :variables shell-default-shell 'shell)
      gtags
      cscope
 
@@ -175,11 +175,20 @@ layers configuration."
     (when (require 'window-purpose-x nil t)
       (purpose-x-magit-single-on)))
 
+  ;; imenu-list
+  (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
+  (add-to-list 'evil-motion-state-modes 'imenu-list-major-mode)
+  (with-eval-after-load 'imenu-list
+    (define-key imenu-list-major-mode-map (kbd "s") #'hs-toggle-hiding)
+    (define-key imenu-list-major-mode-map (kbd "d") #'imenu-list-display-entry)
+    (define-key imenu-list-major-mode-map (kbd "q") #'imenu-list-minor-mode))
+
   (defun toggle-tabs-mode ()
     (interactive)
     (setq indent-tabs-mode (not indent-tabs-mode)))
 
-  (define-key helm-map (kbd "C-M-h") #'help-command)
+  (with-eval-after-load 'helm
+    (define-key helm-map (kbd "C-M-h") #'help-command))
 
   (setcdr evil-insert-state-map nil)
   (define-key evil-insert-state-map [escape] #'evil-normal-state)
@@ -190,7 +199,12 @@ layers configuration."
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc
   ;;   "mhr" 'jump-do-anaconda-usages)
-  (evil-leader/set-key "ob" 'my-switch-buffer))
+  (evil-leader/set-key "ob" 'my-switch-buffer)
+
+  (require 'f)
+  (when (f-exists? (f-expand "~/.emacs.d/private/machine.el"))
+    (load-file (f-expand "~/.emacs.d/private/machine.el"))
+    (load-machine-config)))
 
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
@@ -284,8 +298,9 @@ layers configuration."
           (unwind-protect
               (execute-extended-command current-prefix-arg command-name)
             (smex-rank (intern-soft command-name))))))
-    (evil-leader/set-key ":" #'helm-smex)
-    (global-set-key (kbd "M-x") #'helm-smex)))
+    ;; (evil-leader/set-key ":" #'helm-smex)
+    ;; (global-set-key (kbd "M-x") #'helm-smex)
+    ))
 ;; ;;; Source: https://github.com/wasamasa/dotemacs/blob/master/unpublished/helm-smex.el
 ;; (defun helm-smex-items ()
 ;;   (smex-rebuild-cache)
@@ -361,6 +376,6 @@ layers configuration."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Source Code Pro" :foundry "adobe" :slant normal :weight normal :height 92 :width normal))))
+ ;; '(default ((t (:family "Source Code Pro" :foundry "adobe" :slant normal :weight normal :height 92 :width normal))))
  '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
  '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
