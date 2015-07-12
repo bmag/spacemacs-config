@@ -7,7 +7,7 @@
   (setq-default
    dotspacemacs-configuration-layer-path '()
    dotspacemacs-configuration-layers
-   '(
+   `(
      auto-completion
      ;; better-defaults
      git
@@ -16,6 +16,7 @@
      org
      syntax-checking
      ;; ycmd
+     evil-commentary                    ; replaces evilnc (nerd commentor)
 
      ;; additional contrib layers
      ;; c-c++
@@ -38,6 +39,7 @@
      perspectives
      eyebrowse
      window-purpose
+     (colors :variables colors-enable-nyan-cat-progress-bar ,(display-graphic-p))
 
      ;; private layers
      ;; sr-speedbar
@@ -175,13 +177,38 @@ layers configuration."
     (when (require 'window-purpose-x nil t)
       (purpose-x-magit-single-on)))
 
+  ;; eyebrowse
+  (with-eval-after-load 'eyebrowse
+    (dolist (index (mapcar #'number-to-string '(0 1 2 3 4 5 6 7 8 9)))
+      (define-key eyebrowse-mode-map
+        (kbd (concat "M-" index))
+        (intern-soft (concat "eyebrowse-switch-to-window-config-" index)))
+      (define-key window-numbering-keymap
+        (kbd (concat "M-" index)) nil)))
+
   ;; imenu-list
   (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
   (add-to-list 'evil-motion-state-modes 'imenu-list-major-mode)
   (with-eval-after-load 'imenu-list
-    (define-key imenu-list-major-mode-map (kbd "s") #'hs-toggle-hiding)
-    (define-key imenu-list-major-mode-map (kbd "d") #'imenu-list-display-entry)
-    (define-key imenu-list-major-mode-map (kbd "q") #'imenu-list-minor-mode))
+    (evil-define-key 'motion imenu-list-major-mode
+      "s" #'hs-toggle-hiding
+      "d" #'imenu-list-display-entry
+      "q" #'imenu-list-minor-mode))
+
+  ;; flycheck
+  (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
+  (with-eval-after-load 'flycheck
+    (evil-define-key 'motion flycheck-error-list-mode-map
+      "j" #'flycheck-error-list-next-error
+      "k" #'flycheck-error-list-previous-error))
+
+  ;; anaconda
+  (add-to-list 'evil-motion-state-modes 'anaconda-nav-mode)
+  (with-eval-after-load 'anaconda-mode
+    (evil-define-key 'motion anaconda-nav-mode-map
+      "j" #'next-error
+      "k" #'previous-error
+      "q" #'anaconda-nav-quit))
 
   (defun toggle-tabs-mode ()
     (interactive)
@@ -236,16 +263,22 @@ layers configuration."
      '(helm-source-header ((t (:foreground "white" :box (:line-width 2 :color "grey75" :style released-button) :weight bold :height 1.1 :family "Sans Serif"))))
      '(helm-buffer-process ((t (:foreground "light salmon"))))))
    ((eq theme 'spacemacs-dark)
-    (let ((war "#dc752f")
+    (let ((base "#b2b2b2")
+          (cursor "#e3dedd")
+          (bg1 "#292b2e")
+          (bg2 "#212026")
+          (bg3 "#100a14")
+          (bg4 "#0a0814")
+          (war "#dc752f")
           (inf "#2f96dc")
-          (green "#67b11d")
-          (type "SpringGreen3"))
+          (green "#67b11d"))
       (custom-theme-set-faces
        'spacemacs-dark
-       `(font-lock-type-face ((t (:foreground ,type :bold t))))
        `(diff-hl-delete ((t (:foreground ,war :background "#361800"))))
        `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
-       `(diff-hl-change ((t (:foreground ,inf :background "#001836")))))))))
+       `(diff-hl-change ((t (:foreground ,inf :background "#001836"))))
+       `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
+       )))))
 
 
 (with-eval-after-load 'helm-buffers
