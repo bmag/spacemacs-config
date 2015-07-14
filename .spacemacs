@@ -47,7 +47,7 @@
      helm-smex
      ;; winconf
      )
-   dotspacemacs-additional-packages '(sr-speedbar window-purpose imenu-list let-alist f)
+   dotspacemacs-additional-packages '(nlinum window-purpose imenu-list let-alist ff)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages t))
 
@@ -198,7 +198,41 @@ layers configuration."
         (kbd (concat "M-" index))
         (intern-soft (concat "eyebrowse-switch-to-window-config-" index)))
       (define-key window-numbering-keymap
-        (kbd (concat "M-" index)) nil)))
+        (kbd (concat "M-" index)) nil))
+
+    (defun my-workspace-from-window (&optional buffer)
+      (interactive)
+      (let ((buffer (or buffer (current-buffer))))
+        (eyebrowse-switch-to-window-config-0)
+        (delete-other-windows)
+        (without-purpose (pop-to-buffer buffer))
+        (delete-other-windows)))
+
+    ;; copied from eyebrowse package and modified
+    (spacemacs|define-micro-state workspaces
+      :doc (spacemacs//workspaces-ms-documentation)
+      :use-minibuffer t
+      :evil-leader "W"
+      :bindings
+      ("W" my-workspace-from-window)
+      ("0" eyebrowse-switch-to-window-config-0)
+      ("1" eyebrowse-switch-to-window-config-1)
+      ("2" eyebrowse-switch-to-window-config-2)
+      ("3" eyebrowse-switch-to-window-config-3)
+      ("4" eyebrowse-switch-to-window-config-4)
+      ("5" eyebrowse-switch-to-window-config-5)
+      ("6" eyebrowse-switch-to-window-config-6)
+      ("7" eyebrowse-switch-to-window-config-7)
+      ("8" eyebrowse-switch-to-window-config-8)
+      ("9" eyebrowse-switch-to-window-config-9)
+      ("<tab>" eyebrowse-last-window-config)
+      ("C-i" eyebrowse-last-window-config)
+      ("n" eyebrowse-next-window-config)
+      ("N" eyebrowse-prev-window-config)
+      ("p" eyebrowse-prev-window-config)
+      ("r" spacemacs/workspaces-ms-rename)
+      ("c" eyebrowse-close-window-config))
+    )
 
   ;; imenu-list
   (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
@@ -208,6 +242,14 @@ layers configuration."
       "s" #'hs-toggle-hiding
       "d" #'imenu-list-display-entry
       "q" #'imenu-list-minor-mode))
+
+  ;; nlinum
+  (spacemacs|add-toggle line-numbers
+                        :status nlinum-mode
+                        :on (global-nlinum-mode)
+                        :off (global-nlinum-mode -1)
+                        :documentation "Show the line numbers."
+                        :evil-leader "tn")
 
   ;; flycheck
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
@@ -223,6 +265,9 @@ layers configuration."
       "j" #'next-error
       "k" #'previous-error
       "q" #'anaconda-nav-quit))
+
+  (evil-define-key 'motion help-mode-map
+    (kbd "TAB") #'forward-button)
 
   (defun toggle-tabs-mode ()
     (interactive)
