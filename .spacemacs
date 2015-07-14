@@ -107,6 +107,9 @@ before layers configuration."
 layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
 
+  ;; fix ffap pinging when trying to complete such as "a.is"
+  (setq ffap-machine-p-known 'reject)
+
   ;; auto-completion
   (setq company-idle-delay 0.01)
 
@@ -116,6 +119,17 @@ layers configuration."
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
+
+  ;; python
+  (defvar remote-ipython-buffer nil)
+  (defun open-remote-ipython ()
+    (interactive)
+    (if (buffer-live-p remote-ipython-buffer)
+        (pop-to-buffer remote-ipython-buffer)
+      (prog1
+          (run-python "/usr/bin/ipython console --existing" t 0)
+        (setq remote-ipython-buffer (current-buffer)))))
+  (evil-leader/set-key "or" #'open-remote-ipython)
 
   ;; popup repls
 
