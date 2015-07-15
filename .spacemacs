@@ -47,7 +47,8 @@
      helm-smex
      ;; winconf
      )
-   dotspacemacs-additional-packages '(sr-speedbar window-purpose imenu-list let-alist f)
+   dotspacemacs-additional-packages
+   '(window-purpose imenu-list let-alist f tabbar tabbar-ruler)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages t))
 
@@ -194,6 +195,11 @@ layers configuration."
       "s" #'hs-toggle-hiding
       "d" #'imenu-list-display-entry
       "q" #'imenu-list-minor-mode))
+  (defun auto-fit-imenu-list (&optional window)
+    (when (string= (buffer-name (window-buffer window)) "*Ilist*")
+      (let ((fit-window-to-buffer-horizontally t))
+        (fit-window-to-buffer window))))
+  (add-hook 'purpose-display-buffer-functions #'auto-fit-imenu-list)
 
   ;; flycheck
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
