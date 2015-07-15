@@ -48,7 +48,7 @@
      ;; winconf
      )
    dotspacemacs-additional-packages
-   '(window-purpose imenu-list let-alist f tabbar tabbar-ruler)
+   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages t))
 
@@ -108,6 +108,9 @@ before layers configuration."
 layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
 
+  ;; fix ffap pinging when trying to complete such as "a.is"
+  (setq ffap-machine-p-known 'reject)
+
   ;; auto-completion
   (setq company-idle-delay 0.01)
 
@@ -117,6 +120,17 @@ layers configuration."
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
+
+  ;; python
+  (defvar remote-ipython-buffer nil)
+  (defun open-remote-ipython ()
+    (interactive)
+    (if (buffer-live-p remote-ipython-buffer)
+        (pop-to-buffer remote-ipython-buffer)
+      (prog1
+          (run-python "/usr/bin/ipython console --existing" t 0)
+        (setq remote-ipython-buffer (current-buffer)))))
+  (evil-leader/set-key "or" #'open-remote-ipython)
 
   ;; popup repls
 
@@ -185,7 +199,41 @@ layers configuration."
         (kbd (concat "M-" index))
         (intern-soft (concat "eyebrowse-switch-to-window-config-" index)))
       (define-key window-numbering-keymap
-        (kbd (concat "M-" index)) nil)))
+        (kbd (concat "M-" index)) nil))
+
+    (defun my-workspace-from-window (&optional buffer)
+      (interactive)
+      (let ((buffer (or buffer (current-buffer))))
+        (eyebrowse-switch-to-window-config-0)
+        (delete-other-windows)
+        (without-purpose (pop-to-buffer buffer))
+        (delete-other-windows)))
+
+    ;; copied from eyebrowse package and modified
+    (spacemacs|define-micro-state workspaces
+      :doc (spacemacs//workspaces-ms-documentation)
+      :use-minibuffer t
+      :evil-leader "W"
+      :bindings
+      ("W" my-workspace-from-window)
+      ("0" eyebrowse-switch-to-window-config-0)
+      ("1" eyebrowse-switch-to-window-config-1)
+      ("2" eyebrowse-switch-to-window-config-2)
+      ("3" eyebrowse-switch-to-window-config-3)
+      ("4" eyebrowse-switch-to-window-config-4)
+      ("5" eyebrowse-switch-to-window-config-5)
+      ("6" eyebrowse-switch-to-window-config-6)
+      ("7" eyebrowse-switch-to-window-config-7)
+      ("8" eyebrowse-switch-to-window-config-8)
+      ("9" eyebrowse-switch-to-window-config-9)
+      ("<tab>" eyebrowse-last-window-config)
+      ("C-i" eyebrowse-last-window-config)
+      ("n" eyebrowse-next-window-config)
+      ("N" eyebrowse-prev-window-config)
+      ("p" eyebrowse-prev-window-config)
+      ("r" spacemacs/workspaces-ms-rename)
+      ("c" eyebrowse-close-window-config))
+    )
 
   ;; imenu-list
   (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
@@ -201,6 +249,14 @@ layers configuration."
         (fit-window-to-buffer window))))
   (add-hook 'purpose-display-buffer-functions #'auto-fit-imenu-list)
 
+  ;; nlinum
+  (spacemacs|add-toggle line-numbers
+                        :status nlinum-mode
+                        :on (global-nlinum-mode)
+                        :off (global-nlinum-mode -1)
+                        :documentation "Show the line numbers."
+                        :evil-leader "tn")
+
   ;; flycheck
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
   (with-eval-after-load 'flycheck
@@ -215,6 +271,9 @@ layers configuration."
       "j" #'next-error
       "k" #'previous-error
       "q" #'anaconda-nav-quit))
+
+  (evil-define-key 'motion help-mode-map
+    (kbd "TAB") #'forward-button)
 
   (defun toggle-tabs-mode ()
     (interactive)
