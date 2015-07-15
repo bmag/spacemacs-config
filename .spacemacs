@@ -32,6 +32,7 @@
      (shell :variables shell-default-shell 'shell)
      gtags
      cscope
+     search-engine
 
      smex
      themes-megapack
