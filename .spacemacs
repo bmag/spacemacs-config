@@ -47,6 +47,7 @@
      my-python
      helm-smex
      ;; winconf
+     winconf2
      )
    dotspacemacs-additional-packages
    '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler which-key)
@@ -63,6 +64,7 @@ before layers configuration."
    dotspacemacs-startup-banner 'official
    dotspacemacs-always-show-changelog t
    dotspacemacs-startup-lists '(recents projects)
+   dotspacemacs-startup-recent-list-size 5
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
                          tangotango
@@ -136,26 +138,26 @@ layers configuration."
   ;; popup repls
 
   (with-eval-after-load 'window-purpose-x
-    (purpose-set-extension-configuration
-     :popup-repls
-     (purpose-conf "popup-repls"
-                   :mode-purposes '((inferior-python-mode . repl)
-                                    (inferior-emacs-lisp-mode . repl))))
-    (purpose-x-popupify-purpose 'repl)
+    ;; (purpose-set-extension-configuration
+    ;;  :popup-repls
+    ;;  (purpose-conf "popup-repls"
+    ;;                :mode-purposes '((inferior-python-mode . REPL)
+    ;;                                 (inferior-emacs-lisp-mode . REPL))))
+    ;; (purpose-x-popupify-purpose 'REPL)
 
-    (defun dedicate-repl (window)
-      (when (eql (purpose-window-purpose window) 'repl)
-        (purpose-set-window-purpose-dedicated-p window t)))
-    (add-hook 'purpose-display-buffer-functions #'dedicate-repl)
-    (setq purpose-display-at-bottom-height 0.25)
+    ;; (defun dedicate-repl (window)
+    ;;   (when (eql (purpose-window-purpose window) 'REPL)
+    ;;     (purpose-set-window-purpose-dedicated-p window t)))
+    ;; (add-hook 'purpose-display-buffer-functions #'dedicate-repl)
+    ;; (setq purpose-display-at-bottom-height 0.25)
 
     (defun open-recent-repl ()
       "Select open REPL window, or pop to recently used REPL."
       (interactive)
-      (let ((window (car (purpose-windows-with-purpose 'repl))))
+      (let ((window (car (purpose-windows-with-purpose 'REPL))))
         (if window
             (select-window window)
-          (let ((buffer (car (purpose-buffers-with-purpose 'repl))))
+          (let ((buffer (car (purpose-buffers-with-purpose 'REPL))))
             (if buffer
                 (pop-to-buffer buffer)
               (user-error "No REPL buffer exists"))))))
@@ -168,7 +170,7 @@ layers configuration."
       "m'" #'open-recent-repl)
     (dolist (repl-mode '(inferior-emacs-lisp-mode inferior-python-mode))
       (evil-leader/set-key-for-mode repl-mode
-        "m'" #'delete-window)))
+        "m'" #'quit-window)))
 
 
   ;; ycmd
@@ -217,7 +219,11 @@ layers configuration."
     (purpose-compile-user-configuration)
 
     (when (require 'window-purpose-x nil t)
-      (purpose-x-magit-single-on)))
+      (purpose-x-magit-single-on))
+
+    ;; because of winconf2
+    (popwin-mode -1)
+    (pupo-mode -1))
 
   ;; eyebrowse
   (with-eval-after-load 'eyebrowse
@@ -270,11 +276,11 @@ layers configuration."
       "s" #'hs-toggle-hiding
       "d" #'imenu-list-display-entry
       "q" #'imenu-list-minor-mode))
-  (defun auto-fit-imenu-list (&optional window)
-    (when (string= (buffer-name (window-buffer window)) "*Ilist*")
-      (let ((fit-window-to-buffer-horizontally t))
-        (fit-window-to-buffer window))))
-  (add-hook 'purpose-display-buffer-functions #'auto-fit-imenu-list)
+  ;; (defun auto-fit-imenu-list (&optional window)
+  ;;   (when (string= (buffer-name (window-buffer window)) "*Ilist*")
+  ;;     (let ((fit-window-to-buffer-horizontally t))
+  ;;       (fit-window-to-buffer window))))
+  ;; (add-hook 'purpose-display-buffer-functions #'auto-fit-imenu-list)
 
   ;; nlinum
   (spacemacs|add-toggle line-numbers
@@ -288,6 +294,7 @@ layers configuration."
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
   (with-eval-after-load 'flycheck
     (evil-define-key 'motion flycheck-error-list-mode-map
+      (kbd "RET") #'flycheck-error-list-goto-error
       "j" #'flycheck-error-list-next-error
       "k" #'flycheck-error-list-previous-error))
 
@@ -295,8 +302,11 @@ layers configuration."
   (add-to-list 'evil-motion-state-modes 'anaconda-nav-mode)
   (with-eval-after-load 'anaconda-mode
     (evil-define-key 'motion anaconda-nav-mode-map
+      (kbd "RET") #'anaconda-nav-goto-item
       "j" #'next-error
       "k" #'previous-error
+      "J" #'anaconda-nav-next-module
+      "K" #'anaconda-nav-previous-module
       "q" #'anaconda-nav-quit))
 
   (evil-define-key 'motion help-mode-map
@@ -314,6 +324,7 @@ layers configuration."
   (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
   (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
 
+  (evil-leader/set-key "wq" 'quit-window)
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc

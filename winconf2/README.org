@@ -1,0 +1,61 @@
+#+TITLE: Window Confiugration Layer Driven by Purposes and Workspaces
+
+* Table of Contents                                                   :TOC@4:
+ - [[#description][Description]]
+ - [[#install][Install]]
+ - [[#usage][Usage]]
+ - [[#key-bindings][Key Bindings]]
+
+* Description
+This layer defines a window configuration that is based on purposes (window-purpose)
+and workspaces (eyebrowse).
+
+* Install
+This layer depends on =window-purpose= and =eyebrowse= layers, so make sure they are
+available.
+#+BEGIN_SRC emacs-lisp
+(setq-default dotspacemacs-configuration-layers '(eyebrowse window-purpose winconf2))
+#+END_SRC
+You must also make sure to disable =pupo-mode= and =popwin-mode= in your
+=dotspacemacs/config= function (in =.spacemacs= file).
+#+BEGIN_SRC emacs-lisp
+(popwin-mode -1)
+(pupo-mode -1)
+#+END_SRC
+
+* Usage
+Winconf2 defines the following window layout:
+#+BEGIN_SRC text
+  +----------+------------------+---------+
+  |          |                  |         |
+  |          |                  | imenu   |
+  | neotree  |    main          | list    |
+  |          |                  |         |
+  |          |                  |         |
+  |----------+--------+---------+---------+
+  |    help           |   repl            |
+  +-------------------+-------------------+
+#+END_SRC
+
+To add your own REPL buffers:
+#+BEGIN_SRC emacs-lisp
+(winconf2/add-purpose 'name "repl-buffer-name" 'REPL)
+(winconf2/add-purpose 'regexp "repl-buffer-pattern" 'REPL)
+(winconf2/add-purpose 'mode "repl-buffer-mode" 'REPL)
+(winconf2/add-purpose 'name "help-buffer-name" 'HELP)
+(winconf2/add-purpose 'regexp "help-buffer-pattern" 'HELP)
+(winconf2/add-purpose 'mode "help-buffer-mode" 'HELP)
+(purpose-compile-extended-configuration)
+#+END_SRC
+
+For example, to add python help and REPL:
+#+BEGIN_SRC emacs-lisp
+(winconf2/add-purpose 'mode 'inferior-python-mode 'REPL)
+(winconf2/add-purpose 'name "*anaconda-doc*" 'HELP)
+(purpose-compile-extended-configuration)
+#+END_SRC
+
+* Key Bindings
+| Key Binding | Description |
+|-------------+-------------|
+| ~TBD~       | TBD         |
