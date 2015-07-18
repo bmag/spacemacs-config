@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t -*-
+
 (setq winconf2-packages '(window-purpose))
 (setq winconf2-excluded-packages '())
 
@@ -23,4 +25,25 @@
   ;;                    :key #'car)))
 
   ;; TODO: micro-state to open/close side windows
+
+  ;; (spacemacs|define-micro-state buffers
+  ;;   :use-minibuffer t
+  ;;   :evil-leader "b ."
+  ;;   :bindings
+  ;;   ("q" nil :exit t)
+  ;;   ;; change current buffer
+  ;;   ("n" winconf2/next-useful-buffer)
+  ;;   ("N" winconf2/previous-useful-buffer)
+  ;;   ("p" winconf2/previous-useful-buffer)
+  ;;   ("K" kill-this-buffer)
+  ;;   ;; toggle side windows
+  ;;   ("h" neotree-toggle)
+  ;;   ("j" winconf2/toggle-help-window)
+  ;;   ("k" winconf2/toggle-repl-window)
+  ;;   ("l" winconf2/toggle-ilist-window))
+
+  ;; (evil-leader/set-key
+  ;;   "TAB" #'winconf2/alternate-buffer
+  ;;   "wq" #'winconf2/close-window-and-bury)
   )
+

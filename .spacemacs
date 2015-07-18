@@ -324,7 +324,6 @@ layers configuration."
   (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
   (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
 
-  (evil-leader/set-key "wq" 'quit-window)
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc

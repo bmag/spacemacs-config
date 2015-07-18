@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: t -*-
+
 ;;; purposes
 
 (defun winconf2/set-purpose (conf-obj slot key value test)
@@ -61,6 +63,9 @@
 (defun winconf2//get-window (purpose)
   (car (purpose-windows-with-purpose purpose)))
 
+(defun winconf2//get-buffer (purpose)
+  (car (purpose-buffers-with-purpose purpose)))
+
 (defun winconf2/display-w1 (buffer alist)
   (let ((buffer-purpose (purpose-buffer-purpose buffer))
         (repl-window (winconf2//get-window 'REPL))
@@ -94,3 +99,80 @@
 (defun winconf2/maybe-dedicate-window (window)
   (when (memq (purpose-window-purpose window) '(ILIST HELP REPL))
     (purpose-set-window-purpose-dedicated-p window t)))
+
+
+
+;;; convenience
+
+(defun winconf2/alternate-buffer (&optional purpose)
+  "Switch to last invisible buffer with PURPOSE.
+In effect, when called interactively, switches back and forth between two
+buffers with the same purpose."
+  (interactive)
+  (let* ((purpose (or purpose (purpose-buffer-purpose (current-buffer))))
+         (hidden-buffer (cl-loop for buf in (purpose-buffers-with-purpose purpose)
+                                 unless (get-buffer-window buf)
+                                 return buf)))
+    (when hidden-buffer
+      (switch-to-buffer hidden-buffer))))
+
+(defun winconf2/close-window-and-bury (&optional window)
+  (interactive)
+  (let ((buffer (window-buffer window)))
+    (delete-window window)
+    (bury-buffer buffer)))
+
+(defun winconf2//next-buffer (next-fn boring-fn)
+  "Show next non-boring buffer.
+NEXT-FN should switch to the next buffer. When it switches to the originally
+current buffer, it means we got to the end.
+BORING-FN should return non-nil if the current buffer should not be shown."
+  (let ((start-buffer (current-buffer)))
+    (funcall next-fn)
+    (while (and (not (eq (current-buffer) start-buffer))
+                (funcall boring-fn))
+      (funcall next-fn))))
+
+(defun winconf2/next-useful-buffer ()
+  (interactive)
+  (let ((purpose (purpose-buffer-purpose (current-buffer))))
+    (winconf2//next-buffer
+     #'next-buffer
+     (lambda ()
+       (not (eq (purpose-buffer-purpose (current-buffer)) purpose))))))
+
+(defun winconf2/previous-useful-buffer ()
+  (interactive)
+  (let ((purpose (purpose-buffer-purpose (current-buffer))))
+    (winconf2//next-buffer
+     #'previous-buffer
+     (lambda ()
+       (not (eq (purpose-buffer-purpose (current-buffer)) purpose))))))
+
+(defun winconf2//toggle-window (purpose &optional show-fn hide-fn)
+  (let ((buffer (winconf2//get-buffer purpose))
+        (window (winconf2//get-window purpose))
+        (show-fn (or show-fn #'display-buffer))
+        (hide-fn (or hide-fn #'winconf2/close-window-and-bury)))
+    (if (not buffer)
+        (user-error "No buffer with purpose: %s" purpose)
+      (if window
+          (funcall hide-fn window)
+        (funcall show-fn buffer)))))
+
+(defun winconf2/toggle-help-window ()
+  (interactive)
+  (winconf2//toggle-window 'HELP))
+
+(defun winconf2/toggle-repl-window ()
+  (interactive)
+  (winconf2//toggle-window 'REPL))
+
+(defun winconf2/toggle-ilist-window ()
+  (interactive)
+  (winconf2//toggle-window 'ILIST
+                           (lambda (_buffer)
+                             (let ((imenu-list-focus-after-activation nil))
+                               (imenu-list-minor-mode)))
+                           (lambda (_window)
+                             (imenu-list-minor-mode -1))))
