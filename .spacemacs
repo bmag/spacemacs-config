@@ -8,7 +8,9 @@
    dotspacemacs-configuration-layer-path '()
    dotspacemacs-configuration-layers
    `(
-     auto-completion
+     (auto-completion :variables
+                      auto-completion-enable-help-tooltip t
+                      auto-completion-enable-sort-by-usage t)
      ;; better-defaults
      git
      version-control
@@ -22,6 +24,7 @@
      ;; c-c++
      clojure
      emacs-lisp
+     javascript
      python
      php
      markdown
@@ -116,6 +119,7 @@ layers configuration."
 
   ;; auto-completion
   (setq company-idle-delay 0.01)
+  (setq company-minimum-prefix-length 1)
 
   ;; comint
   (with-eval-after-load 'comint
@@ -222,8 +226,12 @@ layers configuration."
       (purpose-x-magit-single-on))
 
     ;; because of winconf2
-    (popwin-mode -1)
-    (pupo-mode -1))
+    ;; (popwin-mode -1)
+    ;; (pupo-mode -1)
+    (setq popwin:special-display-config
+          (cl-delete "*Help*" popwin:special-display-config
+                     :key #'car :test #'equal))
+    (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config))
 
   ;; eyebrowse
   (with-eval-after-load 'eyebrowse
