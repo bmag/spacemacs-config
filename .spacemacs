@@ -122,7 +122,7 @@ layers configuration."
     (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
-    (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
+    (define-key comint-mode-map (kbd "C-c M-s") #'comint-next-input))
 
   ;; python
   (defvar remote-ipython-buffer nil)
@@ -324,6 +324,11 @@ layers configuration."
   (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
   (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
 
+  (evil-leader/set-key
+    "SPC" 'avy-goto-word-or-subword-1
+    "l" 'avy-goto-line
+    "`" 'pop-to-mark-command
+    "~" 'pop-global-mark)
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc
