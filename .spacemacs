@@ -200,12 +200,25 @@ layers configuration."
   (which-key-add-key-based-replacements
    "SPC /" "search in project"
    "SPC s f" "search in files"
-   "SPC s b" "search in buffers")
+   "SPC s b" "search in buffers"
+   "SPC P" "holy-mode"
+   "SPC m" "mode-specific"
+   "SPC o" "personal"
+   "SPC b Y" "copy whole buffer"
+   "SPC b P" "paste whole buffer"
+   "SPC w j" "move down"
+   "SPC w k" "move up"
+   "SPC w h" "move left"
+   "SPC w l" "move right"
+   "SPC w J" "move far down"
+   "SPC w K" "move far up"
+   "SPC w H" "move far left"
+   "SPC w L" "move far right")
   (cl-loop for entry in '(("spacemacs/\\(.+\\)" . "\\1")
                           ("select-window-\\([0-9]\\)" . "window \\1")
-                          ("evil-ace-jump-line-mode" . "ace jump line")
-                          ("evil-ace-jump-word-mode" . "ace jump word")
-                          ("ace-jump-mode-pop-mark" . "ace jump back")
+                          ("evil-ace-jump-line-mode" . "jump line")
+                          ("evil-ace-jump-word-mode" . "jump word")
+                          ("ace-jump-mode-pop-mark" . "jump back")
                           ("er/expand-region" . "expand region")
                           ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
            do (cl-pushnew entry which-key-description-replacement-alist
