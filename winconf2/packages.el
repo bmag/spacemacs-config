@@ -18,6 +18,8 @@
   (winconf2/generate-display-actions)
   (add-hook 'purpose-display-buffer-functions #'winconf2/maybe-autofit-width)
   (add-hook 'purpose-display-buffer-functions #'winconf2/maybe-dedicate-window)
+  (setq popwin:special-display-config
+        (cl-delete "*Help*" popwin:special-display-config :key #'car :test #'equal))
   ;; (with-eval-after-load 'imenu-list
   ;;   (setq purpose-special-action-sequences
   ;;         (cl-delete #'imenu-list-purpose-display-condition

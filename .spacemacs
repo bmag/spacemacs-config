@@ -21,7 +21,7 @@
      evil-commentary                    ; replaces evilnc (nerd commentor)
 
      ;; additional contrib layers
-     ;; c-c++
+     c-c++
      clojure
      emacs-lisp
      javascript
