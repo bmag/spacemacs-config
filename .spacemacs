@@ -126,7 +126,7 @@ layers configuration."
     (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
-    (define-key comint-mode-map (kbd "C-c M-s") #'comint-previous-input))
+    (define-key comint-mode-map (kbd "C-c M-s") #'comint-next-input))
 
   ;; python
   (defvar remote-ipython-buffer nil)
@@ -204,12 +204,25 @@ layers configuration."
   (which-key-add-key-based-replacements
    "SPC /" "search in project"
    "SPC s f" "search in files"
-   "SPC s b" "search in buffers")
+   "SPC s b" "search in buffers"
+   "SPC P" "holy-mode"
+   "SPC m" "mode-specific"
+   "SPC o" "personal"
+   "SPC b Y" "copy whole buffer"
+   "SPC b P" "paste whole buffer"
+   "SPC w j" "move down"
+   "SPC w k" "move up"
+   "SPC w h" "move left"
+   "SPC w l" "move right"
+   "SPC w J" "move far down"
+   "SPC w K" "move far up"
+   "SPC w H" "move far left"
+   "SPC w L" "move far right")
   (cl-loop for entry in '(("spacemacs/\\(.+\\)" . "\\1")
                           ("select-window-\\([0-9]\\)" . "window \\1")
-                          ("evil-ace-jump-line-mode" . "ace jump line")
-                          ("evil-ace-jump-word-mode" . "ace jump word")
-                          ("ace-jump-mode-pop-mark" . "ace jump back")
+                          ("evil-ace-jump-line-mode" . "jump line")
+                          ("evil-ace-jump-word-mode" . "jump word")
+                          ("ace-jump-mode-pop-mark" . "jump back")
                           ("er/expand-region" . "expand region")
                           ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
            do (cl-pushnew entry which-key-description-replacement-alist
@@ -332,6 +345,11 @@ layers configuration."
   (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
   (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
 
+  (evil-leader/set-key
+    "SPC" 'avy-goto-word-or-subword-1
+    "l" 'avy-goto-line
+    "`" 'pop-to-mark-command
+    "~" 'pop-global-mark)
   (evil-leader/set-key "ot" 'toggle-tabs-mode)
   ;; (evil-leader/set-key-for-mode 'python-mode
   ;;   "mhj" 'jump-do-anaconda-view-doc
