@@ -84,7 +84,7 @@ before layers configuration."
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
    dotspacemacs-command-key ":"
    dotspacemacs-enable-paste-micro-state t
-   dotspacemacs-guide-key-delay 0.4
+   dotspacemacs-which-key-delay 0.4
    dotspacemacs-loading-progress-bar t
    dotspacemacs-fullscreen-at-startup nil
    dotspacemacs-fullscreen-use-non-native nil
@@ -189,44 +189,43 @@ layers configuration."
           ("\\.jpg\\'" "gpicview")))
 
   ;; which-key
-  (guide-key-mode -1)
-  (which-key-mode)
+  ;; (which-key-mode)
   (which-key-setup-side-window-bottom)
-  (which-key-add-major-mode-key-based-replacements
-   'python-mode
-   ", g C" "find callers"     "SPC m g C" "find callers"
-   ", g c" "find called"      "SPC m g c" "find called"
-   ", g d" "find definition"  "SPC m g d" "find definition"
-   ", g r" "find references"  "SPC m g r" "find references"
-   ", g g" "goto symbol"      "SPC m g g" "goto symbol"
-   ", g i" "goto ipc"         "SPC m g i" "goto ipc"
-   )
-  (which-key-add-key-based-replacements
-   "SPC /" "search in project"
-   "SPC s f" "search in files"
-   "SPC s b" "search in buffers"
-   "SPC P" "holy-mode"
-   "SPC m" "mode-specific"
-   "SPC o" "personal"
-   "SPC b Y" "copy whole buffer"
-   "SPC b P" "paste whole buffer"
-   "SPC w j" "move down"
-   "SPC w k" "move up"
-   "SPC w h" "move left"
-   "SPC w l" "move right"
-   "SPC w J" "move far down"
-   "SPC w K" "move far up"
-   "SPC w H" "move far left"
-   "SPC w L" "move far right")
-  (cl-loop for entry in '(("spacemacs/\\(.+\\)" . "\\1")
-                          ("select-window-\\([0-9]\\)" . "window \\1")
-                          ("evil-ace-jump-line-mode" . "jump line")
-                          ("evil-ace-jump-word-mode" . "jump word")
-                          ("ace-jump-mode-pop-mark" . "jump back")
-                          ("er/expand-region" . "expand region")
-                          ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
-           do (cl-pushnew entry which-key-description-replacement-alist
-                          :key #'car :test #'string=))
+  ;; (which-key-add-major-mode-key-based-replacements
+  ;;  'python-mode
+  ;;  ", g C" "find callers"     "SPC m g C" "find callers"
+  ;;  ", g c" "find called"      "SPC m g c" "find called"
+  ;;  ", g d" "find definition"  "SPC m g d" "find definition"
+  ;;  ", g r" "find references"  "SPC m g r" "find references"
+  ;;  ", g g" "goto symbol"      "SPC m g g" "goto symbol"
+  ;;  ", g i" "goto ipc"         "SPC m g i" "goto ipc"
+  ;;  )
+  ;; (which-key-add-key-based-replacements
+  ;;  "SPC /" "search in project"
+  ;;  "SPC s f" "search in files"
+  ;;  "SPC s b" "search in buffers"
+  ;;  "SPC P" "holy-mode"
+  ;;  "SPC m" "mode-specific"
+  ;;  "SPC o" "personal"
+  ;;  "SPC b Y" "copy whole buffer"
+  ;;  "SPC b P" "paste whole buffer"
+  ;;  "SPC w j" "move down"
+  ;;  "SPC w k" "move up"
+  ;;  "SPC w h" "move left"
+  ;;  "SPC w l" "move right"
+  ;;  "SPC w J" "move far down"
+  ;;  "SPC w K" "move far up"
+  ;;  "SPC w H" "move far left"
+  ;;  "SPC w L" "move far right")
+  ;; (cl-loop for entry in '(("spacemacs/\\(.+\\)" . "\\1")
+  ;;                         ("select-window-\\([0-9]\\)" . "window \\1")
+  ;;                         ("evil-ace-jump-line-mode" . "jump line")
+  ;;                         ("evil-ace-jump-word-mode" . "jump word")
+  ;;                         ("ace-jump-mode-pop-mark" . "jump back")
+  ;;                         ("er/expand-region" . "expand region")
+  ;;                         ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
+  ;;          do (cl-pushnew entry which-key-description-replacement-alist
+  ;;                         :key #'car :test #'string=))
 
   ;; window-purpose
   (with-eval-after-load 'window-purpose
