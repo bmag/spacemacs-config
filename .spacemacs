@@ -390,7 +390,9 @@ layers configuration."
      '(helm-source-header ((t (:foreground "white" :box (:line-width 2 :color "grey75" :style released-button) :weight bold :height 1.1 :family "Sans Serif"))))
      '(helm-buffer-process ((t (:foreground "light salmon"))))))
    ((eq theme 'spacemacs-dark)
-    (let ((base "#b2b2b2")
+    (let ((active1 "#222226")
+          (active2 "#5d4d7a")
+          (base "#b2b2b2")
           (cursor "#e3dedd")
           (bg1 "#292b2e")
           (bg2 "#212026")
@@ -401,12 +403,16 @@ layers configuration."
           (green "#67b11d"))
       (custom-theme-set-faces
        'spacemacs-dark
+       `(diff-hl-change ((t (:foreground ,inf :background "#001836"))))
        `(diff-hl-delete ((t (:foreground ,war :background "#361800"))))
        `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
-       `(diff-hl-change ((t (:foreground ,inf :background "#001836"))))
        `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
+       ;; `popup-tip-face' used by flycheck tips
+       `(popup-tip-face ((t (:foreground ,base :background ,active2 :bold nil))))
+       ;; `tooltip' used by company-quickhelp tips
+       ;; `(tooltip ((t (:foreground ,active1 :background "#ad9dca"))))
+       `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
        )))))
-
 
 (with-eval-after-load 'helm-buffers
   (defclass my-buffers-source (helm-source-buffers)
@@ -541,11 +547,3 @@ layers configuration."
      (340 . "#fbc02d")
      (360 . "#558b2f"))))
  '(vc-annotate-very-old-color nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- ;; '(default ((t (:family "Source Code Pro" :foundry "adobe" :slant normal :weight normal :height 92 :width normal))))
- '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
- '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
