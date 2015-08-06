@@ -24,6 +24,7 @@
      c-c++
      clojure
      emacs-lisp
+     html
      javascript
      python
      php
@@ -53,7 +54,7 @@
      winconf2
      )
    dotspacemacs-additional-packages
-   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler which-key)
+   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages t))
 
@@ -70,8 +71,9 @@ before layers configuration."
    dotspacemacs-startup-recent-list-size 5
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
-                         tangotango
-                         leuven)
+                         ;; tangotango
+                         ;; leuven
+                         )
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Source Code Pro"
                                :size 13
@@ -113,6 +115,7 @@ before layers configuration."
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
+  (setq evil-escape-delay 0.2)
 
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
@@ -128,16 +131,8 @@ layers configuration."
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-next-input))
 
-  ;; python
-  (defvar remote-ipython-buffer nil)
-  (defun open-remote-ipython ()
-    (interactive)
-    (if (buffer-live-p remote-ipython-buffer)
-        (pop-to-buffer remote-ipython-buffer)
-      (prog1
-          (run-python "/usr/bin/ipython console --existing" t 0)
-        (setq remote-ipython-buffer (current-buffer)))))
-  (evil-leader/set-key "or" #'open-remote-ipython)
+  ;; smartparens (highlighting)
+  (setq sp-highlight-pair-overlay nil)
 
   ;; popup repls
 
@@ -190,7 +185,6 @@ layers configuration."
 
   ;; which-key
   ;; (which-key-mode)
-  (which-key-setup-side-window-bottom)
   ;; (which-key-add-major-mode-key-based-replacements
   ;;  'python-mode
   ;;  ", g C" "find callers"     "SPC m g C" "find callers"
@@ -226,12 +220,76 @@ layers configuration."
   ;;                         ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
   ;;          do (cl-pushnew entry which-key-description-replacement-alist
   ;;                         :key #'car :test #'string=))
+  (which-key-setup-side-window-right-bottom)
+  (let ((new-descriptions
+         ;; being higher in this list means the replacement is applied later
+         '(;; avy
+           ("avy-goto-word-or-subword-1" . "avy word")
+           ("avy-goto-line"              . "avy line")
+           ("pop-to-mark-command"        . "pop mark (local)")
+           ("pop-global-mark"            . "pop mark (global)")
+
+           ;; cscope
+           ("helm-cscope-find-called-function"      . "find callies (cscope)")
+           ;; using regexp here because `helm-cscope-find-called-this-function' is
+           ;; truncated by which-key
+           ("helm-cscope-find-calling-this-.*"      . "find callers (cscope)")
+           ("helm-cscope-find-global-definition"    . "find definition (cscope)")
+           ("helm-cscope-find-egrep-pattern"        . "find pattern (cscope)")
+           ("helm-cscope-find-this-file"            . "find file (cscope)")
+           ("helm-cscope-find-files-including-file" . "find includers (cscope)")
+           ("helm-cscope-find-this-symbol"          . "find references (cscope)")
+           ("helm-cscope-find-this-text-string"     . "find string (cscope)")
+           ("cscope/run-pycscope"                   . "index files (cscope)")
+           ("cscope-index-file"                     . "index files (cscope)")
+
+           ;; python
+           ("anaconda-mode-goto"                . "goto current")
+           ("anaconda-mode-view-doc"            . "help current")
+           ("anaconda-mode-usages"              . "usages current")
+           ("python-shell-send-\\(.+\\)"        . "send \\1 to repl")
+           ("python-shell-send-\\(.+\\)-switch" . "send \\1 to repl and switch")
+           ("python-start-or-switch-repl"       . "open repl")
+
+           ;; buffers
+           ("copy-whole-buffer-to-clipboard" . "copy whole buffer")
+           ("copy-clipboard-to-whole-buffer" . "paste whole buffer")
+           ("spacemacs/safe-revert-buffer" . "revert buffer")
+           ("spacemacs/safe-erase-buffer" . "erase buffer")
+           ("spacemacs/next-useful-buffer" . "next buffer")
+           ("spacemacs/previous-useful-buffer" . "previous buffer")
+
+           ;; windows
+           ("evil-window-\\(left\\|right\\|up\\|down\\)" . "move \\1")
+           ("evil-window-move-\\(.*\\)-\\(.*\\)" . "move \\1 \\2")
+           ("winner-undo" . "undo window change")
+           ("winner-redo" . "redo window change")
+           )))
+    (dolist (nd new-descriptions)
+      (setq which-key-description-replacement-alist
+            (cl-delete (concat "\\`" (car nd) "\\'")
+                       which-key-description-replacement-alist
+                       :key #'car :test #'string=))
+      ;; ensure the target matches the whole string
+      (cl-pushnew (cons (concat "\\`" (car nd) "\\'") (cdr nd))
+                  which-key-description-replacement-alist
+                  :key #'car :test #'string=)))
+  (which-key-add-key-based-replacements
+   ", d" "debug"    "SPC m d" "debug"
+   ", e" "eval"     "SPC m e" "eval"
+   ", g" "goto"     "SPC m g" "goto"
+   ", h" "help"     "SPC m h" "help"
+   ", r" "refactor" "SPC m r" "refactor"
+   ", s" "repl"     "SPC m s" "repl"
+   ", t" "test"     "SPC m t" "test")
 
   ;; window-purpose
   (with-eval-after-load 'window-purpose
     (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
     (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
                 :key #'car :test #'equal)
+    (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
+    (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
     (purpose-compile-user-configuration)
 
     (when (require 'window-purpose-x nil t)
@@ -349,11 +407,9 @@ layers configuration."
     "l" 'avy-goto-line
     "`" 'pop-to-mark-command
     "~" 'pop-global-mark)
-  (evil-leader/set-key "ot" 'toggle-tabs-mode)
-  ;; (evil-leader/set-key-for-mode 'python-mode
-  ;;   "mhj" 'jump-do-anaconda-view-doc
-  ;;   "mhr" 'jump-do-anaconda-usages)
-  (evil-leader/set-key "ob" 'my-switch-buffer)
+  (evil-leader/set-key "ot" #'toggle-tabs-mode)
+  (evil-leader/set-key "ob" #'my-switch-buffer)
+  (evil-leader/set-key "ol" #'helm-locate)
 
   (require 'f)
   (when (f-exists? (f-expand "~/.emacs.d/private/machine.el"))
@@ -393,6 +449,8 @@ layers configuration."
     (let ((active1 "#222226")
           (active2 "#5d4d7a")
           (base "#b2b2b2")
+          (comment "#2aa198")
+          (comment-bg "#293234")
           (cursor "#e3dedd")
           (bg1 "#292b2e")
           (bg2 "#212026")
@@ -408,7 +466,8 @@ layers configuration."
        `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
        `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
        ;; `popup-tip-face' used by flycheck tips
-       `(popup-tip-face ((t (:foreground ,base :background ,active2 :bold nil))))
+       ;; `(popup-tip-face ((t (:foreground ,cursor :background ,active2 :bold nil))))
+       `(popup-tip-face ((t (:foreground "black" :background ,comment :bold nil :box t))))
        ;; `tooltip' used by company-quickhelp tips
        ;; `(tooltip ((t (:foreground ,active1 :background "#ad9dca"))))
        `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
