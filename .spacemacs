@@ -117,6 +117,56 @@ layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
 
+  ;; evil-avy integration
+  (defmacro evil-enclose-avy-for-motion (&rest body)
+    "Enclose avy to make it suitable for motions.
+Based on `evil-enclose-ace-jump-for-motion'."
+    (declare (indent defun)
+             (debug t))
+    `(let ((avy-all-windows
+            (if (and (not (memq evil-state '(visual operator)))
+                     (boundp 'avy-all-windows))
+                avy-all-windows
+              nil)))
+       ,@body))
+
+  (defmacro evil-define-avy-motion (command type)
+    (declare (indent defun)
+             (debug t))
+    (let ((name (intern (format "evil-%s" command))))
+      `(evil-define-motion ,name (_count)
+         ,(format "Evil motion for `%s'." command)
+         :type ,type
+         :jump t
+         :repeat abort
+         (evil-without-repeat
+           (evil-enclose-avy-for-motion
+             (call-interactively ',command))))))
+
+  ;; define evil-avy-* motion commands for avy-* commands
+  (evil-define-avy-motion avy-goto-word-or-subword-1 exclusive)
+  (evil-define-avy-motion avy-goto-line line)
+  (evil-define-avy-motion avy-goto-char exclusive)
+  (evil-define-avy-motion avy-goto-char-2 exclusive)
+  (evil-define-avy-motion avy-goto-word-0 exclusive)
+  (evil-define-avy-motion avy-goto-word-1 exclusive)
+  (evil-define-avy-motion avy-goto-subword-0 exclusive)
+  (evil-define-avy-motion avy-goto-subword-1 exclusive)
+
+  ;; remap avy-* commands to evil-avy-* commands
+  (dolist (command '(avy-goto-word-or-subword-1
+                     avy-goto-line
+                     avy-goto-char
+                     avy-goto-char-2
+                     avy-goto-word-0
+                     avy-goto-word-1
+                     avy-goto-subword-0
+                     avy-goto-subword-1))
+    (global-set-key (vector 'remap command)
+                    (intern-soft (format "evil-%s" command))))
+
+  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
 
@@ -402,11 +452,11 @@ layers configuration."
   (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
   (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
 
-  (evil-leader/set-key
-    "SPC" 'avy-goto-word-or-subword-1
-    "l" 'avy-goto-line
-    "`" 'pop-to-mark-command
-    "~" 'pop-global-mark)
+  ;; (evil-leader/set-key
+  ;;   "SPC" 'avy-goto-word-or-subword-1
+  ;;   "l" 'avy-goto-line
+  ;;   "`" 'pop-to-mark-command
+  ;;   "~" 'pop-global-mark)
   (evil-leader/set-key "ot" #'toggle-tabs-mode)
   (evil-leader/set-key "ob" #'my-switch-buffer)
   (evil-leader/set-key "ol" #'helm-locate)
@@ -606,3 +656,10 @@ layers configuration."
      (340 . "#fbc02d")
      (360 . "#558b2f"))))
  '(vc-annotate-very-old-color nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
+ '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
