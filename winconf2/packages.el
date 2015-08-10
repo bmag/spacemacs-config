@@ -1,6 +1,12 @@
 ;;; -*- lexical-binding: t -*-
 
-(setq winconf2-packages '(window-purpose))
+;; bugs:
+;; - `open-recent-repl' doesn't open recent repl, if repl was closed with ,' (`quit-window')
+;; - `open-recent-repl' should be renamed to `winconf2/open-recent-repl'
+
+(setq winconf2-packages '(window-purpose
+                          evil
+                          python))
 (setq winconf2-excluded-packages '())
 
 (setq winconf2-base-purpose-conf nil)
@@ -49,3 +55,20 @@
   ;;   "wq" #'winconf2/close-window-and-bury)
   )
 
+(defun winconf2/post-init-python ()
+  (evil-leader/set-key-for-mode 'python-mode
+    "m'" #'python-start-or-switch-repl)
+  (evil-leader/set-key-for-mode 'inferior-python-mode
+    "m'" #'quit-window))
+
+(defun winconf2/post-init-evil ()
+  (evil-leader/set-key-for-mode 'emacs-lisp-mode
+    "m'" #'ielm))
+
+(with-eval-after-load 'ielm
+  (evil-leader/set-key-for-mode 'inferior-emacs-lisp-mode
+    "m'" #'quit-window))
+
+(with-eval-after-load 'dired
+  (evil-leader/set-key-for-mode 'dired-mode
+    "m'" #'open-recent-repl))

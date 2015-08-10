@@ -47,8 +47,9 @@
      (colors :variables colors-enable-nyan-cat-progress-bar ,(display-graphic-p))
 
      ;; private layers
-     ;; sr-speedbar
+     avy
      my-python
+     command-log
      ;; helm-smex
      ;; winconf
      winconf2
@@ -56,7 +57,7 @@
    dotspacemacs-additional-packages
    '(nlinum imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
    dotspacemacs-excluded-packages '(php-extras)
-   dotspacemacs-delete-orphan-packages nil))
+   dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -117,60 +118,6 @@ layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
 
-  ;; evil-avy integration
-  (defmacro evil-enclose-avy-for-motion (&rest body)
-    "Enclose avy to make it suitable for motions.
-Based on `evil-enclose-ace-jump-for-motion'."
-    (declare (indent defun)
-             (debug t))
-    `(let ((avy-all-windows
-            (if (and (not (memq evil-state '(visual operator)))
-                     (boundp 'avy-all-windows))
-                avy-all-windows
-              nil)))
-       ,@body))
-
-  (defmacro evil-define-avy-motion (command type)
-    (declare (indent defun)
-             (debug t))
-    (let ((name (intern (format "evil-%s" command))))
-      `(evil-define-motion ,name (_count)
-         ,(format "Evil motion for `%s'." command)
-         :type ,type
-         :jump t
-         :repeat abort
-         (evil-without-repeat
-           (evil-enclose-avy-for-motion
-             (call-interactively ',command))))))
-
-  ;; define evil-avy-* motion commands for avy-* commands
-  (evil-define-avy-motion avy-goto-word-or-subword-1 exclusive)
-  (evil-define-avy-motion avy-goto-line line)
-  (evil-define-avy-motion avy-goto-char inclusive)
-  (evil-define-avy-motion avy-goto-char-2 inclusive)
-  (evil-define-avy-motion avy-goto-word-0 exclusive)
-  (evil-define-avy-motion avy-goto-word-1 exclusive)
-  (evil-define-avy-motion avy-goto-subword-0 exclusive)
-  (evil-define-avy-motion avy-goto-subword-1 exclusive)
-
-  ;; remap avy-* commands to evil-avy-* commands
-  (dolist (command '(avy-goto-word-or-subword-1
-                     avy-goto-line
-                     avy-goto-char
-                     avy-goto-char-2
-                     avy-goto-word-0
-                     avy-goto-word-1
-                     avy-goto-subword-0
-                     avy-goto-subword-1))
-    (define-key evil-motion-state-map
-      (vector 'remap command) (intern-soft (format "evil-%s" command))))
-
-  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (evil-leader/set-key
-    "SPC" 'avy-goto-word-or-subword-1
-    "l" 'avy-goto-line
-    ";" 'avy-goto-char)
-
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
 
@@ -180,10 +127,11 @@ Based on `evil-enclose-ace-jump-for-motion'."
 
   ;; comint
   (with-eval-after-load 'comint
-    (define-key comint-mode-map (kbd "M-p") #'comint-previous-matching-input-from-input)
-    (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
-    (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
-    (define-key comint-mode-map (kbd "C-c M-s") #'comint-next-input))
+    (evil-define-key 'normal comint-mode-map
+      (kbd "M-p") #'comint-previous-matching-input-from-input
+      (kbd "M-n") #'comint-next-matching-input-from-input
+      (kbd "C-c M-r") #'comint-previous-input
+      (kbd "C-c M-s") #'comint-next-input))
 
   ;; desktop save mode
   (setq desktop-path (list spacemacs-cache-directory))
@@ -193,40 +141,14 @@ Based on `evil-enclose-ace-jump-for-motion'."
 
   ;; popup repls
 
-  (with-eval-after-load 'window-purpose-x
-    ;; (purpose-set-extension-configuration
-    ;;  :popup-repls
-    ;;  (purpose-conf "popup-repls"
-    ;;                :mode-purposes '((inferior-python-mode . REPL)
-    ;;                                 (inferior-emacs-lisp-mode . REPL))))
-    ;; (purpose-x-popupify-purpose 'REPL)
-
-    ;; (defun dedicate-repl (window)
-    ;;   (when (eql (purpose-window-purpose window) 'REPL)
-    ;;     (purpose-set-window-purpose-dedicated-p window t)))
-    ;; (add-hook 'purpose-display-buffer-functions #'dedicate-repl)
-    ;; (setq purpose-display-at-bottom-height 0.25)
-
-    (defun open-recent-repl ()
-      "Select open REPL window, or pop to recently used REPL."
-      (interactive)
-      (let ((window (car (purpose-windows-with-purpose 'REPL))))
-        (if window
-            (select-window window)
-          (let ((buffer (car (purpose-buffers-with-purpose 'REPL))))
-            (if buffer
-                (pop-to-buffer buffer)
-              (user-error "No REPL buffer exists"))))))
-
-    (evil-leader/set-key-for-mode 'python-mode
-      "m'" #'python-start-or-switch-repl)
-    (evil-leader/set-key-for-mode 'emacs-lisp-mode
-      "m'" #'ielm)
-    (evil-leader/set-key-for-mode 'dired-mode
-      "m'" #'open-recent-repl)
-    (dolist (repl-mode '(inferior-emacs-lisp-mode inferior-python-mode))
-      (evil-leader/set-key-for-mode repl-mode
-        "m'" #'quit-window)))
+  ;; (with-eval-after-load 'window-purpose-x
+  ;;   (evil-leader/set-key-for-mode 'emacs-lisp-mode
+  ;;     "m'" #'ielm)
+  ;;   (evil-leader/set-key-for-mode 'dired-mode
+  ;;     "m'" #'open-recent-repl)
+  ;;   (dolist (repl-mode '(inferior-emacs-lisp-mode inferior-python-mode))
+  ;;     (evil-leader/set-key-for-mode repl-mode
+  ;;       "m'" #'quit-window)))
 
 
   ;; ycmd
@@ -240,17 +162,6 @@ Based on `evil-enclose-ace-jump-for-motion'."
           ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
           ("\\.jpg\\'" "gpicview")))
 
-  ;; which-key
-  ;; (which-key-mode)
-  ;; (which-key-add-major-mode-key-based-replacements
-  ;;  'python-mode
-  ;;  ", g C" "find callers"     "SPC m g C" "find callers"
-  ;;  ", g c" "find called"      "SPC m g c" "find called"
-  ;;  ", g d" "find definition"  "SPC m g d" "find definition"
-  ;;  ", g r" "find references"  "SPC m g r" "find references"
-  ;;  ", g g" "goto symbol"      "SPC m g g" "goto symbol"
-  ;;  ", g i" "goto ipc"         "SPC m g i" "goto ipc"
-  ;;  )
   ;; (which-key-add-key-based-replacements
   ;;  "SPC /" "search in project"
   ;;  "SPC s f" "search in files"
@@ -411,11 +322,6 @@ Based on `evil-enclose-ace-jump-for-motion'."
       "s" #'hs-toggle-hiding
       "d" #'imenu-list-display-entry
       "q" #'imenu-list-minor-mode))
-  ;; (defun auto-fit-imenu-list (&optional window)
-  ;;   (when (string= (buffer-name (window-buffer window)) "*Ilist*")
-  ;;     (let ((fit-window-to-buffer-horizontally t))
-  ;;       (fit-window-to-buffer window))))
-  ;; (add-hook 'purpose-display-buffer-functions #'auto-fit-imenu-list)
 
   ;; nlinum
   (spacemacs|add-toggle line-numbers
@@ -454,19 +360,10 @@ Based on `evil-enclose-ace-jump-for-motion'."
   (with-eval-after-load 'helm
     (define-key helm-map (kbd "C-M-h") #'help-command))
 
-  ;; (setcdr evil-insert-state-map nil)
-  ;; (define-key evil-insert-state-map [escape] #'evil-normal-state)
-  ;; (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
-  ;; (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
   (defalias 'evil-insert-state #'evil-emacs-state)
 
   (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
 
-  ;; (evil-leader/set-key
-  ;;   "SPC" 'avy-goto-word-or-subword-1
-  ;;   "l" 'avy-goto-line
-  ;;   "`" 'pop-to-mark-command
-  ;;   "~" 'pop-global-mark)
   (evil-leader/set-key "ot" #'toggle-tabs-mode)
   (evil-leader/set-key "ob" #'my-switch-buffer)
   (evil-leader/set-key "ol" #'helm-locate)
@@ -560,62 +457,6 @@ Based on `evil-enclose-ace-jump-for-motion'."
     (helm :buffer "*helm-my-buffers*"
           :prompt "Buffer: "
           :sources (helm-make-source "My buffers" 'my-buffers-source))))
-
-(with-eval-after-load 'helm-source
-  (with-eval-after-load 'smex
-    (defvar helm-smex-source--cache (make-hash-table :test #'eq))
-    (defvar helm-smex-source--candidates nil)
-    (defun helm-smex-source--smex-score-no-cache (command)
-      (or (cdr (car (cl-member (symbol-name command) smex-cache :key #'car :test #'string=)))
-          0))
-    (defun helm-smex-source--smex-score (command)
-      (or (gethash command helm-smex-source--cache)
-          (puthash command
-                   (helm-smex-source--smex-score-no-cache command)
-                   helm-smex-source--cache)))
-    (defun helm-smex-source--sort-by-smex (cand1 cand2)
-      (> (helm-smex-source--smex-score (intern-soft cand1))
-         (helm-smex-source--smex-score (intern-soft cand2))))
-    (defclass helm-smex-source (helm-source-sync)
-      ((init :initform (lambda ()
-                         ;; (smex-rebuild-cache)
-                         (clrhash helm-smex-source--cache)
-                         (setq helm-smex-source--candidates (smex-convert-for-ido smex-cache))))
-       (candidates :initform 'helm-smex-source--candidates)
-       (match :initform #'helm-fuzzy-match)
-       (filtered-candidate-transformer
-        :initform (lambda (candidates source)
-                    (sort candidates #'helm-smex-source--sort-by-smex)))))
-    (defun helm-smex ()
-      (interactive)
-      (let ((command-name (helm :buffer "*helm-smex*" :sources (helm-make-source "Smex" 'helm-smex-source))))
-        (when command-name
-          (unwind-protect
-              (execute-extended-command current-prefix-arg command-name)
-            (smex-rank (intern-soft command-name))))))
-    ;; (evil-leader/set-key ":" #'helm-smex)
-    ;; (global-set-key (kbd "M-x") #'helm-smex)
-    ))
-;; ;;; Source: https://github.com/wasamasa/dotemacs/blob/master/unpublished/helm-smex.el
-;; (defun helm-smex-items ()
-;;   (smex-rebuild-cache)
-;;   (smex-convert-for-ido smex-cache))
-
-;; (defun helm-smex-execute-command (command)
-;;   (let ((prefix-arg current-prefix-arg))
-;;     (command-execute command 'record)
-;;     (smex-rank command)))
-
-;; (setq helm-smex-source
-;;       '((name . "M-x")
-;;         (candidates . helm-smex-items)
-;;         (coerce . intern)
-;;         (action ("smex" . (helm-smex-execute-command)))))
-
-;; (defun helm-smex ()
-;;   (interactive)
-;;   (helm :sources 'helm-smex-source :buffer "*helm-smex*"))
-;; ;;; end of source
 
 
 ;; Do not write anything past this comment. This is where Emacs will

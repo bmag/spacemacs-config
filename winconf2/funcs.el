@@ -176,3 +176,13 @@ BORING-FN should return non-nil if the current buffer should not be shown."
                                (imenu-list-minor-mode)))
                            (lambda (_window)
                              (imenu-list-minor-mode -1))))
+(defun open-recent-repl ()
+  "Select open REPL window, or pop to recently used REPL."
+  (interactive)
+  (let ((window (car (purpose-windows-with-purpose 'REPL))))
+    (if window
+        (select-window window)
+      (let ((buffer (car (purpose-buffers-with-purpose 'REPL))))
+        (if buffer
+            (pop-to-buffer buffer)
+          (user-error "No REPL buffer exists"))))))
