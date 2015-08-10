@@ -49,14 +49,14 @@
      ;; private layers
      ;; sr-speedbar
      my-python
-     helm-smex
+     ;; helm-smex
      ;; winconf
-     winconf2
+     ;; winconf2
      )
    dotspacemacs-additional-packages
-   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler)
+   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
    dotspacemacs-excluded-packages '(php-extras)
-   dotspacemacs-delete-orphan-packages t))
+   dotspacemacs-delete-orphan-packages nil))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -146,8 +146,8 @@ Based on `evil-enclose-ace-jump-for-motion'."
   ;; define evil-avy-* motion commands for avy-* commands
   (evil-define-avy-motion avy-goto-word-or-subword-1 exclusive)
   (evil-define-avy-motion avy-goto-line line)
-  (evil-define-avy-motion avy-goto-char exclusive)
-  (evil-define-avy-motion avy-goto-char-2 exclusive)
+  (evil-define-avy-motion avy-goto-char inclusive)
+  (evil-define-avy-motion avy-goto-char-2 inclusive)
   (evil-define-avy-motion avy-goto-word-0 exclusive)
   (evil-define-avy-motion avy-goto-word-1 exclusive)
   (evil-define-avy-motion avy-goto-subword-0 exclusive)
@@ -162,10 +162,14 @@ Based on `evil-enclose-ace-jump-for-motion'."
                      avy-goto-word-1
                      avy-goto-subword-0
                      avy-goto-subword-1))
-    (global-set-key (vector 'remap command)
-                    (intern-soft (format "evil-%s" command))))
+    (define-key evil-motion-state-map
+      (vector 'remap command) (intern-soft (format "evil-%s" command))))
 
   (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (evil-leader/set-key
+    "SPC" 'avy-goto-word-or-subword-1
+    "l" 'avy-goto-line
+    ";" 'avy-goto-char)
 
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
@@ -180,6 +184,9 @@ Based on `evil-enclose-ace-jump-for-motion'."
     (define-key comint-mode-map (kbd "M-n") #'comint-next-matching-input-from-input)
     (define-key comint-mode-map (kbd "C-c M-r") #'comint-previous-input)
     (define-key comint-mode-map (kbd "C-c M-s") #'comint-next-input))
+
+  ;; desktop save mode
+  (setq desktop-path (list spacemacs-cache-directory))
 
   ;; smartparens (highlighting)
   (setq sp-highlight-pair-overlay nil)
@@ -447,10 +454,13 @@ Based on `evil-enclose-ace-jump-for-motion'."
   (with-eval-after-load 'helm
     (define-key helm-map (kbd "C-M-h") #'help-command))
 
-  (setcdr evil-insert-state-map nil)
-  (define-key evil-insert-state-map [escape] #'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
-  (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
+  ;; (setcdr evil-insert-state-map nil)
+  ;; (define-key evil-insert-state-map [escape] #'evil-normal-state)
+  ;; (define-key evil-insert-state-map (kbd "f") #'evil-escape-insert-state)
+  ;; (define-key evil-insert-state-map (kbd "M-m") evil-leader--default-map)
+  (defalias 'evil-insert-state #'evil-emacs-state)
+
+  (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
 
   ;; (evil-leader/set-key
   ;;   "SPC" 'avy-goto-word-or-subword-1

@@ -29,4 +29,8 @@
           (run-python "/usr/bin/ipython console --existing" t 0)
         ;; bug: `current-buffer' isn't appropriate here
         (setq remote-ipython-buffer (current-buffer)))))
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq imenu-create-index-function #'python-imenu-create-index))
+            t)
   (evil-leader/set-key "or" #'open-remote-ipython))
