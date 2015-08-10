@@ -15,9 +15,9 @@
 (setq window-purpose-post-extensions '(purpose-popwin))
 
 (defun window-purpose/init-purpose-popwin ()
-  (byte-recompile-directory
-   (configuration-layer/get-layer-property 'window-purpose :ext-dir)
-   0)
+  ;; (byte-recompile-directory
+  ;;  (configuration-layer/get-layer-property 'window-purpose :ext-dir)
+  ;;  0)
   (use-package purpose-popwin
     :config
     (pupo-mode)
