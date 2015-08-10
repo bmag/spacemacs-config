@@ -12,7 +12,8 @@
 
 (setq window-purpose-packages '(window-purpose
                                 imenu-list
-                                let-alist))
+                                let-alist
+                                (purpose-popwin :location local :step post)))
 
 (setq window-purpose-excluded-packages '())
 
@@ -131,3 +132,11 @@ PURPOSE defaults to the purpose of the current buffer."
            (setq eyebrowse-new-workspace window-purpose--eyebrowse-new-workspace)))
        (add-hook 'purpose-mode-hook #'window-purpose/sync-eyebrowse)
        (window-purpose/sync-eyebrowse))))
+
+(defun window-purpose/init-purpose-popwin ()
+  (use-package purpose-popwin
+    :config
+    (pupo-mode)
+    (evil-leader/set-key
+      "wpp" #'pupo/close-window
+      "wpP" #'pupo/close-all-windows)))

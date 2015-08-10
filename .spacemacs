@@ -51,10 +51,10 @@
      my-python
      ;; helm-smex
      ;; winconf
-     ;; winconf2
+     winconf2
      )
    dotspacemacs-additional-packages
-   '(nlinum window-purpose imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
+   '(nlinum imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
    dotspacemacs-excluded-packages '(php-extras)
    dotspacemacs-delete-orphan-packages nil))
 

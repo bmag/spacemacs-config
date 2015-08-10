@@ -1,5 +1,5 @@
 (evil-leader/set-key
-  "TAB" #'winconf2/alternate-buffer
+  ;; "TAB" #'winconf2/alternate-buffer
   "wq" #'winconf2/close-window-and-bury)
 
 (spacemacs|define-micro-state buffers
