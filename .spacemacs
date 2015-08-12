@@ -37,6 +37,7 @@
      gtags
      cscope
      search-engine
+     unimpaired
 
      smex
      themes-megapack
@@ -47,7 +48,6 @@
      (colors :variables colors-enable-nyan-cat-progress-bar ,(display-graphic-p))
 
      ;; private layers
-     avy
      my-python
      command-log
      ;; helm-smex
@@ -85,7 +85,7 @@ before layers configuration."
    dotspacemacs-emacs-leader-key "M-m"
    dotspacemacs-major-mode-leader-key ","
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
-   dotspacemacs-command-key ":"
+   dotspacemacs-command-key ";"
    dotspacemacs-enable-paste-micro-state t
    dotspacemacs-which-key-delay 0.4
    dotspacemacs-loading-progress-bar t
@@ -135,21 +135,11 @@ layers configuration."
 
   ;; desktop save mode
   (setq desktop-path (list spacemacs-cache-directory))
+  ;; (desktop-save-mode)
+  ;; (desktop-read)
 
   ;; smartparens (highlighting)
   (setq sp-highlight-pair-overlay nil)
-
-  ;; popup repls
-
-  ;; (with-eval-after-load 'window-purpose-x
-  ;;   (evil-leader/set-key-for-mode 'emacs-lisp-mode
-  ;;     "m'" #'ielm)
-  ;;   (evil-leader/set-key-for-mode 'dired-mode
-  ;;     "m'" #'open-recent-repl)
-  ;;   (dolist (repl-mode '(inferior-emacs-lisp-mode inferior-python-mode))
-  ;;     (evil-leader/set-key-for-mode repl-mode
-  ;;       "m'" #'quit-window)))
-
 
   ;; ycmd
   ;; (setq ycmd-server-command `("python" ,(expand-file-name "~/src/ycmd/ycmd/__main__.py")))
@@ -162,32 +152,11 @@ layers configuration."
           ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
           ("\\.jpg\\'" "gpicview")))
 
-  ;; (which-key-add-key-based-replacements
-  ;;  "SPC /" "search in project"
-  ;;  "SPC s f" "search in files"
-  ;;  "SPC s b" "search in buffers"
-  ;;  "SPC P" "holy-mode"
-  ;;  "SPC m" "mode-specific"
-  ;;  "SPC o" "personal"
-  ;;  "SPC b Y" "copy whole buffer"
-  ;;  "SPC b P" "paste whole buffer"
-  ;;  "SPC w j" "move down"
-  ;;  "SPC w k" "move up"
-  ;;  "SPC w h" "move left"
-  ;;  "SPC w l" "move right"
-  ;;  "SPC w J" "move far down"
-  ;;  "SPC w K" "move far up"
-  ;;  "SPC w H" "move far left"
-  ;;  "SPC w L" "move far right")
-  ;; (cl-loop for entry in '(("spacemacs/\\(.+\\)" . "\\1")
-  ;;                         ("select-window-\\([0-9]\\)" . "window \\1")
-  ;;                         ("evil-ace-jump-line-mode" . "jump line")
-  ;;                         ("evil-ace-jump-word-mode" . "jump word")
-  ;;                         ("ace-jump-mode-pop-mark" . "jump back")
-  ;;                         ("er/expand-region" . "expand region")
-  ;;                         ("\\(.*\\)-micro-state\\(-?.*\\)" . "\\1-ms\\2"))
-  ;;          do (cl-pushnew entry which-key-description-replacement-alist
-  ;;                         :key #'car :test #'string=))
+  ;; nyan-mode
+  (setq nyan-bar-length 16)
+  ;; avy
+  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+
   (which-key-setup-side-window-right-bottom)
   (let ((new-descriptions
          ;; being higher in this list means the replacement is applied later
