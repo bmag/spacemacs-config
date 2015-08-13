@@ -64,7 +64,7 @@
 This function is called at the very startup of Spacemacs initialization
 before layers configuration."
   (setq-default
-   dotspacemacs-editing-style 'vim
+   dotspacemacs-editing-style 'hybrid
    dotspacemacs-verbose-loading nil
    dotspacemacs-startup-banner 'official
    dotspacemacs-always-show-changelog t
@@ -117,6 +117,19 @@ before layers configuration."
 layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
+
+  ;; powerline changes
+  (spacemacs|define-mode-line-segment purpose
+    (substring (purpose--modeline-string) 2 -1)
+    :when purpose-mode)
+  (unless (memq 'purpose spacemacs-mode-line-left)
+    (setq spacemacs-mode-line-left
+          (-insert-at (1+ (-elem-index 'major-mode spacemacs-mode-line-left))
+                      'purpose
+                      spacemacs-mode-line-left)))
+  ;; (diminish 'purpose-mode)
+  (setq spacemacs-mode-line-version-controlp nil)
+  (setq spacemacs-mode-line-minor-modesp nil)
 
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
@@ -329,8 +342,6 @@ layers configuration."
   (with-eval-after-load 'helm
     (define-key helm-map (kbd "C-M-h") #'help-command))
 
-  (defalias 'evil-insert-state #'evil-emacs-state)
-
   (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
 
   (evil-leader/set-key "ot" #'toggle-tabs-mode)
@@ -393,10 +404,10 @@ layers configuration."
        `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
        ;; `popup-tip-face' used by flycheck tips
        ;; `(popup-tip-face ((t (:foreground ,cursor :background ,active2 :bold nil))))
-       `(popup-tip-face ((t (:foreground "black" :background ,comment :bold nil :box t))))
+       ;; `(popup-tip-face ((t (:foreground "black" :background ,comment :bold nil :box t))))
        ;; `tooltip' used by company-quickhelp tips
        ;; `(tooltip ((t (:foreground ,active1 :background "#ad9dca"))))
-       `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
+       ;; `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
        )))))
 
 (with-eval-after-load 'helm-buffers
