@@ -38,6 +38,7 @@
      cscope
      search-engine
      unimpaired
+     evil-snipe
 
      smex
      themes-megapack
@@ -117,6 +118,11 @@ before layers configuration."
 layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
+
+  (define-key evil-normal-state-map (kbd ";") #'smex)
+  ;; evil-snipe to repeat f/F/t/T by reptead typing of f/F/t/T, frees
+  ;; ; for smex
+  (evil-snipe-override-mode)
 
   ;; powerline changes
   (spacemacs|define-mode-line-segment purpose
@@ -233,6 +239,8 @@ layers configuration."
    ", s" "repl"     "SPC m s" "repl"
    ", t" "test"     "SPC m t" "test")
 
+  (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
+              :key #'car :test #'equal)
   ;; window-purpose
   (with-eval-after-load 'window-purpose
     (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
@@ -240,6 +248,8 @@ layers configuration."
                 :key #'car :test #'equal)
     (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
     (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
+    (cl-pushnew '(".travis.yml" . edit) purpose-user-name-purposes
+                :key #'car :test #'equal)
     (purpose-compile-user-configuration)
 
     (when (require 'window-purpose-x nil t)
@@ -251,7 +261,8 @@ layers configuration."
     (setq popwin:special-display-config
           (cl-delete "*Help*" popwin:special-display-config
                      :key #'car :test #'equal))
-    (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config))
+    (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config)
+    ;; (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config))
 
   ;; eyebrowse
   (with-eval-after-load 'eyebrowse

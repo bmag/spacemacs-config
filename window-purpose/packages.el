@@ -101,7 +101,8 @@ PURPOSE defaults to the purpose of the current buffer."
                                   t)))))
 
     (purpose-mode)
-    (purpose-x-golden-ratio-setup)))
+    (purpose-x-golden-ratio-setup)
+    (purpose-x-kill-setup)))
 
 (defun window-purpose/post-init-window-purpose ()
   ;; *LV* buffer is used by corelv.el
