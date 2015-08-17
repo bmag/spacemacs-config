@@ -262,7 +262,8 @@ layers configuration."
           (cl-delete "*Help*" popwin:special-display-config
                      :key #'car :test #'equal))
     (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config)
-    ;; (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config))
+    ;; (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config)
+    )
 
   ;; eyebrowse
   (with-eval-after-load 'eyebrowse
