@@ -33,6 +33,10 @@
   ;;                    :key #'car)))
 
   ;; TODO: micro-state to open/close side windows
+  (define-key purpose-mode-map (kbd "<f5>") #'winconf2/toggle-neotree-window)
+  (define-key purpose-mode-map (kbd "<f6>") #'winconf2/toggle-help-window)
+  (define-key purpose-mode-map (kbd "<f7>") #'winconf2/toggle-repl-window)
+  (define-key purpose-mode-map (kbd "<f8>") #'winconf2/toggle-ilist-window)
 
   ;; (spacemacs|define-micro-state buffers
   ;;   :use-minibuffer t

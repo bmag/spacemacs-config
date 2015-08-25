@@ -28,8 +28,6 @@
      javascript
      python
      php
-     markdown
-     org
      ;; sql
 
      slime
@@ -119,10 +117,11 @@ layers configuration."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
 
-  (define-key evil-normal-state-map (kbd ";") #'smex)
+  ;; (define-key evil-normal-state-map (kbd ";") #'smex)
+  ;; (define-key evil-motion-state-map (kbd ";") #'smex)
   ;; evil-snipe to repeat f/F/t/T by reptead typing of f/F/t/T, frees
   ;; ; for smex
-  (evil-snipe-override-mode)
+  ;; (evil-snipe-override-mode)
 
   ;; powerline changes
   (spacemacs|define-mode-line-segment purpose
@@ -146,11 +145,12 @@ layers configuration."
 
   ;; comint
   (with-eval-after-load 'comint
-    (evil-define-key 'normal comint-mode-map
-      (kbd "M-p") #'comint-previous-matching-input-from-input
-      (kbd "M-n") #'comint-next-matching-input-from-input
-      (kbd "C-c M-r") #'comint-previous-input
-      (kbd "C-c M-s") #'comint-next-input))
+    (dolist (state '(normal insert emacs))
+      (evil-define-key state comint-mode-map
+        (kbd "M-p") #'comint-previous-matching-input-from-input
+        (kbd "M-n") #'comint-next-matching-input-from-input
+        (kbd "C-c M-r") #'comint-previous-input
+        (kbd "C-c M-s") #'comint-next-input)))
 
   ;; desktop save mode
   (setq desktop-path (list spacemacs-cache-directory))
@@ -177,70 +177,9 @@ layers configuration."
   (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
   (which-key-setup-side-window-right-bottom)
-  (let ((new-descriptions
-         ;; being higher in this list means the replacement is applied later
-         '(;; avy
-           ("avy-goto-word-or-subword-1" . "avy word")
-           ("avy-goto-line"              . "avy line")
-           ("pop-to-mark-command"        . "pop mark (local)")
-           ("pop-global-mark"            . "pop mark (global)")
 
-           ;; cscope
-           ("helm-cscope-find-called-function"      . "find callies (cscope)")
-           ;; using regexp here because `helm-cscope-find-called-this-function' is
-           ;; truncated by which-key
-           ("helm-cscope-find-calling-this-.*"      . "find callers (cscope)")
-           ("helm-cscope-find-global-definition"    . "find definition (cscope)")
-           ("helm-cscope-find-egrep-pattern"        . "find pattern (cscope)")
-           ("helm-cscope-find-this-file"            . "find file (cscope)")
-           ("helm-cscope-find-files-including-file" . "find includers (cscope)")
-           ("helm-cscope-find-this-symbol"          . "find references (cscope)")
-           ("helm-cscope-find-this-text-string"     . "find string (cscope)")
-           ("cscope/run-pycscope"                   . "index files (cscope)")
-           ("cscope-index-file"                     . "index files (cscope)")
-
-           ;; python
-           ("anaconda-mode-goto"                . "goto current")
-           ("anaconda-mode-view-doc"            . "help current")
-           ("anaconda-mode-usages"              . "usages current")
-           ("python-shell-send-\\(.+\\)"        . "send \\1 to repl")
-           ("python-shell-send-\\(.+\\)-switch" . "send \\1 to repl and switch")
-           ("python-start-or-switch-repl"       . "open repl")
-
-           ;; buffers
-           ("copy-whole-buffer-to-clipboard" . "copy whole buffer")
-           ("copy-clipboard-to-whole-buffer" . "paste whole buffer")
-           ("spacemacs/safe-revert-buffer" . "revert buffer")
-           ("spacemacs/safe-erase-buffer" . "erase buffer")
-           ("spacemacs/next-useful-buffer" . "next buffer")
-           ("spacemacs/previous-useful-buffer" . "previous buffer")
-
-           ;; windows
-           ("evil-window-\\(left\\|right\\|up\\|down\\)" . "move \\1")
-           ("evil-window-move-\\(.*\\)-\\(.*\\)" . "move \\1 \\2")
-           ("winner-undo" . "undo window change")
-           ("winner-redo" . "redo window change")
-           )))
-    (dolist (nd new-descriptions)
-      (setq which-key-description-replacement-alist
-            (cl-delete (concat "\\`" (car nd) "\\'")
-                       which-key-description-replacement-alist
-                       :key #'car :test #'string=))
-      ;; ensure the target matches the whole string
-      (cl-pushnew (cons (concat "\\`" (car nd) "\\'") (cdr nd))
-                  which-key-description-replacement-alist
-                  :key #'car :test #'string=)))
-  (which-key-add-key-based-replacements
-   ", d" "debug"    "SPC m d" "debug"
-   ", e" "eval"     "SPC m e" "eval"
-   ", g" "goto"     "SPC m g" "goto"
-   ", h" "help"     "SPC m h" "help"
-   ", r" "refactor" "SPC m r" "refactor"
-   ", s" "repl"     "SPC m s" "repl"
-   ", t" "test"     "SPC m t" "test")
-
-  (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
-              :key #'car :test #'equal)
+  ;; (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
+  ;;             :key #'car :test #'equal)
   ;; window-purpose
   (with-eval-after-load 'window-purpose
     (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
@@ -272,44 +211,11 @@ layers configuration."
         (kbd (concat "M-" index))
         (intern-soft (concat "eyebrowse-switch-to-window-config-" index)))
       (define-key window-numbering-keymap
-        (kbd (concat "M-" index)) nil))
-
-    (defun my-workspace-from-window (&optional buffer)
-      (interactive)
-      (let ((buffer (or buffer (current-buffer))))
-        (eyebrowse-switch-to-window-config-0)
-        (delete-other-windows)
-        (without-purpose (pop-to-buffer buffer))
-        (delete-other-windows)))
-
-    ;; copied from eyebrowse package and modified
-    (spacemacs|define-micro-state workspaces
-      :doc (spacemacs//workspaces-ms-documentation)
-      :use-minibuffer t
-      :evil-leader "W"
-      :bindings
-      ("W" my-workspace-from-window)
-      ("0" eyebrowse-switch-to-window-config-0)
-      ("1" eyebrowse-switch-to-window-config-1)
-      ("2" eyebrowse-switch-to-window-config-2)
-      ("3" eyebrowse-switch-to-window-config-3)
-      ("4" eyebrowse-switch-to-window-config-4)
-      ("5" eyebrowse-switch-to-window-config-5)
-      ("6" eyebrowse-switch-to-window-config-6)
-      ("7" eyebrowse-switch-to-window-config-7)
-      ("8" eyebrowse-switch-to-window-config-8)
-      ("9" eyebrowse-switch-to-window-config-9)
-      ("<tab>" eyebrowse-last-window-config)
-      ("C-i" eyebrowse-last-window-config)
-      ("n" eyebrowse-next-window-config)
-      ("N" eyebrowse-prev-window-config)
-      ("p" eyebrowse-prev-window-config)
-      ("r" spacemacs/workspaces-ms-rename)
-      ("c" eyebrowse-close-window-config))
-    )
+        (kbd (concat "M-" index)) nil)))
 
   ;; imenu-list
-  (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
+  ;; (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
+  (evil-leader/set-key "oi" #'imenu-list-minor-mode)
   (add-to-list 'evil-motion-state-modes 'imenu-list-major-mode)
   (with-eval-after-load 'imenu-list
     (evil-define-key 'motion imenu-list-major-mode
@@ -354,7 +260,8 @@ layers configuration."
   (with-eval-after-load 'helm
     (define-key helm-map (kbd "C-M-h") #'help-command))
 
-  (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
+  ;; (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
+  ;; (define-key evil-motion-state-map (kbd "0") #'evil-digit-argument-or-evil-beginning-of-line)
 
   (evil-leader/set-key "ot" #'toggle-tabs-mode)
   (evil-leader/set-key "ob" #'my-switch-buffer)

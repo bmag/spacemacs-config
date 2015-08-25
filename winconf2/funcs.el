@@ -149,33 +149,59 @@ BORING-FN should return non-nil if the current buffer should not be shown."
      (lambda ()
        (not (eq (purpose-buffer-purpose (current-buffer)) purpose))))))
 
-(defun winconf2//toggle-window (purpose &optional show-fn hide-fn)
+(defun winconf2//toggle-window (purpose &optional show-fn hide-fn create-fn)
   (let ((buffer (winconf2//get-buffer purpose))
         (window (winconf2//get-window purpose))
         (show-fn (or show-fn #'display-buffer))
         (hide-fn (or hide-fn #'winconf2/close-window-and-bury)))
     (if (not buffer)
-        (user-error "No buffer with purpose: %s" purpose)
+        (if create-fn
+            (funcall create-fn)
+          (user-error "No buffer with purpose: %s" purpose))
       (if window
           (funcall hide-fn window)
         (funcall show-fn buffer)))))
 
-(defun winconf2/toggle-help-window ()
-  (interactive)
-  (winconf2//toggle-window 'HELP))
+(defvar winconf2-repl-get-create-fn nil
+  "Function to create a proper REPL for a buffer.
+The function should return the REPL buffer that was created.
+If a proper REPL exists already, return its buffer instead of creating a
+new one.
+This function will is called by `winconf2/toggle-repl-window' when
+necessary.
+This variable should be buffer-local.")
 
-(defun winconf2/toggle-repl-window ()
-  (interactive)
-  (winconf2//toggle-window 'REPL))
+(defun winconf2/toggle-help-window (&optional arg)
+  (interactive "P")
+  (winconf2//toggle-window 'HELP
+                           (if arg #'display-buffer #'pop-to-buffer)))
 
-(defun winconf2/toggle-ilist-window ()
-  (interactive)
+(defun winconf2/toggle-repl-window (&optional arg)
+  (interactive "P")
+  (winconf2//toggle-window 'REPL
+                           (if arg #'display-buffer #'pop-to-buffer)
+                           ;; TODO: buffer-dependant create-fn
+                           ))
+
+(defun winconf2/toggle-ilist-window (&optional arg)
+  (interactive "P")
   (winconf2//toggle-window 'ILIST
                            (lambda (_buffer)
-                             (let ((imenu-list-focus-after-activation nil))
+                             (let ((imenu-list-focus-after-activation (not arg)))
                                (imenu-list-minor-mode)))
                            (lambda (_window)
-                             (imenu-list-minor-mode -1))))
+                             (imenu-list-minor-mode -1))
+                           (lambda ()
+                             (let ((imenu-list-focus-after-activation (not arg)))
+                               (imenu-list-minor-mode)))))
+
+(defun winconf2/toggle-neotree-window (&optional arg)
+  (interactive "P")
+  (winconf2//toggle-window 'Neotree
+                           (lambda (_buffer) (neotree-show))
+                           (lambda (_window) (neotree-hide))
+                           #'neotree-show))
+
 (defun open-recent-repl ()
   "Select open REPL window, or pop to recently used REPL."
   (interactive)
