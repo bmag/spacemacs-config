@@ -36,7 +36,7 @@
      cscope
      search-engine
      unimpaired
-     evil-snipe
+     ;; evil-snipe
 
      smex
      themes-megapack
@@ -55,7 +55,7 @@
      )
    dotspacemacs-additional-packages
    '(nlinum imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
-   dotspacemacs-excluded-packages '(php-extras)
+   dotspacemacs-excluded-packages '(toxi-theme)
    dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
@@ -63,7 +63,7 @@
 This function is called at the very startup of Spacemacs initialization
 before layers configuration."
   (setq-default
-   dotspacemacs-editing-style 'hybrid
+   dotspacemacs-editing-style 'vim
    dotspacemacs-verbose-loading nil
    dotspacemacs-startup-banner 'official
    dotspacemacs-always-show-changelog t
@@ -75,8 +75,8 @@ before layers configuration."
                          ;; leuven
                          )
    dotspacemacs-colorize-cursor-according-to-state t
-   dotspacemacs-default-font '("Source Code Pro"
-                               :size 13
+   dotspacemacs-default-font '("Sauce Code Powerline"
+                               :size 14
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -84,7 +84,7 @@ before layers configuration."
    dotspacemacs-emacs-leader-key "M-m"
    dotspacemacs-major-mode-leader-key ","
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
-   dotspacemacs-command-key ";"
+   dotspacemacs-command-key ":"
    dotspacemacs-enable-paste-micro-state t
    dotspacemacs-which-key-delay 0.4
    dotspacemacs-loading-progress-bar t
@@ -124,6 +124,7 @@ layers configuration."
   ;; (evil-snipe-override-mode)
 
   ;; powerline changes
+  (setq powerline-default-separator 'slant)
   (spacemacs|define-mode-line-segment purpose
     (substring (purpose--modeline-string) 2 -1)
     :when purpose-mode)
@@ -232,6 +233,9 @@ layers configuration."
                         :evil-leader "tn")
 
   ;; flycheck
+  (evil-leader/set-key
+    "e?" #'flycheck-describe-checker
+    "ev" #'flycheck-verify-setup)
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
   (with-eval-after-load 'flycheck
     (evil-define-key 'motion flycheck-error-list-mode-map
