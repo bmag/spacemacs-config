@@ -76,7 +76,7 @@ before layers configuration."
                          )
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Sauce Code Powerline"
-                               :size 14
+                               :size 13
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -160,6 +160,7 @@ layers configuration."
 
   ;; smartparens (highlighting)
   (setq sp-highlight-pair-overlay nil)
+  (setq sp-show-pair-from-inside t)
 
   ;; ycmd
   ;; (setq ycmd-server-command `("python" ,(expand-file-name "~/src/ycmd/ycmd/__main__.py")))
@@ -233,9 +234,6 @@ layers configuration."
                         :evil-leader "tn")
 
   ;; flycheck
-  (evil-leader/set-key
-    "e?" #'flycheck-describe-checker
-    "ev" #'flycheck-verify-setup)
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
   (with-eval-after-load 'flycheck
     (evil-define-key 'motion flycheck-error-list-mode-map
