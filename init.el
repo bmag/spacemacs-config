@@ -49,13 +49,14 @@
      ;; private layers
      my-python
      command-log
+     imenu-list
      ;; helm-smex
      ;; winconf
-     winconf2
+     ;; winconf2
      )
    dotspacemacs-additional-packages
-   '(nlinum imenu-list let-alist f tabbar tabbar-ruler jinja2-mode)
-   dotspacemacs-excluded-packages '(toxi-theme)
+   '(nlinum let-alist irfc f tabbar tabbar-ruler jinja2-mode)
+   dotspacemacs-excluded-packages '()
    dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
@@ -128,14 +129,14 @@ layers configuration."
   (spacemacs|define-mode-line-segment purpose
     (substring (purpose--modeline-string) 2 -1)
     :when purpose-mode)
-  (unless (memq 'purpose spacemacs-mode-line-left)
-    (setq spacemacs-mode-line-left
-          (-insert-at (1+ (-elem-index 'major-mode spacemacs-mode-line-left))
-                      'purpose
-                      spacemacs-mode-line-left)))
+  ;; (unless (memq 'purpose spacemacs-mode-line-left)
+  ;;   (setq spacemacs-mode-line-left
+  ;;         (-insert-at (1+ (-elem-index 'major-mode spacemacs-mode-line-left))
+  ;;                     'purpose
+  ;;                     spacemacs-mode-line-left)))
   ;; (diminish 'purpose-mode)
   (setq spacemacs-mode-line-version-controlp nil)
-  (setq spacemacs-mode-line-minor-modesp nil)
+  ;; (setq spacemacs-mode-line-minor-modesp nil)
 
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
@@ -198,11 +199,11 @@ layers configuration."
     ;; because of winconf2
     ;; (popwin-mode -1)
     ;; (pupo-mode -1)
-    (setq popwin:special-display-config
-          (cl-delete "*Help*" popwin:special-display-config
-                     :key #'car :test #'equal))
+    ;; (setq popwin:special-display-config
+    ;;       (cl-delete "*Help*" popwin:special-display-config
+    ;;                  :key #'car :test #'equal))
     (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config)
-    ;; (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config)
+    (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config)
     )
 
   ;; eyebrowse
@@ -214,16 +215,6 @@ layers configuration."
       (define-key window-numbering-keymap
         (kbd (concat "M-" index)) nil)))
 
-  ;; imenu-list
-  ;; (global-set-key (kbd "C-`") #'imenu-list-minor-mode)
-  (evil-leader/set-key "oi" #'imenu-list-minor-mode)
-  (add-to-list 'evil-motion-state-modes 'imenu-list-major-mode)
-  (with-eval-after-load 'imenu-list
-    (evil-define-key 'motion imenu-list-major-mode
-      "s" #'hs-toggle-hiding
-      "d" #'imenu-list-display-entry
-      "q" #'imenu-list-minor-mode))
-
   ;; nlinum
   (spacemacs|add-toggle line-numbers
                         :status nlinum-mode
@@ -231,6 +222,16 @@ layers configuration."
                         :off (global-nlinum-mode -1)
                         :documentation "Show the line numbers."
                         :evil-leader "tn")
+
+  ;; centered-cursor
+  ;; (add-hook 'prog-mode-hook #'centered-cursor-mode)
+  ;; (add-hook 'text-mode-hook #'centered-cursor-mode)
+
+  ;; irfc
+  (with-eval-after-load 'irfc-mode
+    (evilify irfc-mode irfc-mode-map
+             "g" #'irfc-table-jump
+             "G" #'irfc-page-goto))
 
   ;; flycheck
   (evil-leader/set-key
@@ -263,6 +264,7 @@ layers configuration."
 
   (with-eval-after-load 'helm
     (define-key helm-map (kbd "C-M-h") #'help-command))
+  (setq helm-locate-fuzzy-match nil)
 
   ;; (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
   ;; (define-key evil-motion-state-map (kbd "0") #'evil-digit-argument-or-evil-beginning-of-line)
