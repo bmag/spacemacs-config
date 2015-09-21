@@ -30,7 +30,6 @@
      php
      ;; sql
 
-     slime
      (shell :variables shell-default-shell 'shell)
      gtags
      cscope
@@ -47,16 +46,17 @@
      (colors :variables colors-enable-nyan-cat-progress-bar ,(display-graphic-p))
 
      ;; private layers
-     my-python
+     python-private
      command-log
      imenu-list
+     misc
      ;; helm-smex
      ;; winconf
      ;; winconf2
      )
    dotspacemacs-additional-packages
    '(nlinum let-alist irfc f tabbar tabbar-ruler jinja2-mode)
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(drupal-mode)
    dotspacemacs-delete-orphan-packages t))
 
 (defun dotspacemacs/init ()
@@ -64,7 +64,7 @@
 This function is called at the very startup of Spacemacs initialization
 before layers configuration."
   (setq-default
-   dotspacemacs-editing-style 'vim
+   dotspacemacs-editing-style 'hybrid
    dotspacemacs-verbose-loading nil
    dotspacemacs-startup-banner 'official
    dotspacemacs-always-show-changelog t
@@ -72,9 +72,7 @@ before layers configuration."
    dotspacemacs-startup-recent-list-size 5
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
-                         ;; tangotango
-                         ;; leuven
-                         )
+                         monokai)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Sauce Code Powerline"
                                :size 13
@@ -100,18 +98,20 @@ before layers configuration."
    dotspacemacs-highlight-delimiters 'all
    dotspacemacs-persistent-server nil
    dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
-   dotspacemacs-default-package-repository nil)
+   dotspacemacs-default-package-repository nil))
 
-  ;; User initialization goes here
+(defun dotspacemacs/user-init ()
   (setq-default git-magit-status-fullscreen t)
   (setq save-interprogram-paste-before-kill t)
+  ;; anaconda-mode has/had problems detecting anaconda_mode.py's directory
+  (setq anaconda-mode-server-directory "/usr/local/lib/python2.7/dist-packages")
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
     (defadvice spacemacs/post-theme-init (after my-post-theme-init-adv activate)
       "Call `my-post-theme-init'."
       (my-post-theme-init theme))))
 
-(defun dotspacemacs/config ()
+(defun dotspacemacs/user-config ()
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
@@ -144,6 +144,7 @@ layers configuration."
   ;; auto-completion
   (setq company-idle-delay 0.01)
   (setq company-minimum-prefix-length 1)
+  (setq company-tooltip-align-annotations t)
 
   ;; comint
   (with-eval-after-load 'comint
@@ -153,9 +154,11 @@ layers configuration."
         (kbd "M-n") #'comint-next-matching-input-from-input
         (kbd "C-c M-r") #'comint-previous-input
         (kbd "C-c M-s") #'comint-next-input)))
+  (evil-leader/set-key
+    "oh" #'helm-comint-input-ring)
 
   ;; desktop save mode
-  (setq desktop-path (list spacemacs-cache-directory))
+  ;; (setq desktop-path (list spacemacs-cache-directory))
   ;; (desktop-save-mode)
   ;; (desktop-read)
 
@@ -203,8 +206,7 @@ layers configuration."
     ;; (setq popwin:special-display-config
     ;;       (cl-delete "*Help*" popwin:special-display-config
     ;;                  :key #'car :test #'equal))
-    (push '("*anaconda-nav*" :dedicated t :position bottom :stick t :noselect nil) popwin:special-display-config)
-    (push '("*anaconda-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4) popwin:special-display-config)
+    (pupo/update-purpose-config)
     )
 
   ;; eyebrowse
@@ -234,6 +236,10 @@ layers configuration."
              "g" #'irfc-table-jump
              "G" #'irfc-page-goto))
 
+  ;; customize
+  (with-eval-after-load 'cus-edit
+    (evilify Custom-mode custom-mode-map))
+
   ;; flycheck
   (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
   (with-eval-after-load 'flycheck
@@ -241,17 +247,6 @@ layers configuration."
       (kbd "RET") #'flycheck-error-list-goto-error
       "j" #'flycheck-error-list-next-error
       "k" #'flycheck-error-list-previous-error))
-
-  ;; anaconda
-  (add-to-list 'evil-motion-state-modes 'anaconda-nav-mode)
-  (with-eval-after-load 'anaconda-mode
-    (evil-define-key 'motion anaconda-nav-mode-map
-      (kbd "RET") #'anaconda-nav-goto-item
-      "j" #'next-error
-      "k" #'previous-error
-      "J" #'anaconda-nav-next-module
-      "K" #'anaconda-nav-previous-module
-      "q" #'anaconda-nav-quit))
 
   (evil-define-key 'motion help-mode-map
     (kbd "TAB") #'forward-button)
