@@ -103,8 +103,6 @@ before layers configuration."
 (defun dotspacemacs/user-init ()
   (setq-default git-magit-status-fullscreen t)
   (setq save-interprogram-paste-before-kill t)
-  ;; anaconda-mode has/had problems detecting anaconda_mode.py's directory
-  (setq anaconda-mode-server-directory "/usr/local/lib/python2.7/dist-packages")
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
     (defadvice spacemacs/post-theme-init (after my-post-theme-init-adv activate)
