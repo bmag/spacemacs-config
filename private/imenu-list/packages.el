@@ -22,17 +22,11 @@
     :defer t
     :init
     (progn
-      (setq imenu-list-focus-after-activation t)
-      (evil-leader/set-key "oi" #'imenu-list-minor-mode))
+      (setq imenu-list-focus-after-activation t
+            imenu-list-auto-resize t)
+      (evil-leader/set-key "bi" #'imenu-list-minor-mode))
     :config
     (progn
-      (defun imenu-list/resize-window (&rest _args)
-        (-when-let (window (get-buffer-window imenu-list-buffer-name))
-          (let ((fit-window-to-buffer-horizontally t))
-            (fit-window-to-buffer window))))
-      (advice-add 'imenu-list-update :after #'imenu-list/resize-window)
-
       (evilify imenu-list-major-mode imenu-list-major-mode-map
                "d" #'imenu-list-display-entry
-               "s" #'hs-toggle-hiding
                "q" #'imenu-list-minor-mode))))
