@@ -11,14 +11,14 @@
 ;;; License: GPLv3
 
 (setq python-private-packages '(anaconda-mode
-                           popwin
-                           python))
+                                popwin
+                                python))
 
 (setq python-private-excluded-packages '())
 
-(defun python-private/pre-init-anaconda-mode ()
-  ;; anaconda-mode has/had problems detecting anaconda_mode.py's directory
-  (setq anaconda-mode-server-directory "/usr/local/lib/python2.7/dist-packages"))
+;; (defun python-private/pre-init-anaconda-mode ()
+;;   ;; anaconda-mode has/had problems detecting anaconda_mode.py's directory
+;;   (setq anaconda-mode-server-directory "/usr/local/lib/python2.7/dist-packages"))
 
 (defun python-private/post-init-anaconda-mode ()
   (evilify anaconda-mode-view-mode anaconda-mode-view-mode-map

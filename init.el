@@ -3,8 +3,11 @@
 ;; It must be stored in your home directory.
 
 (defun dotspacemacs/layers ()
-  "Configuration Layers declaration."
+  "Configuration Layers declaration.
+You should not put any user code in this function besides modifying the variable
+values."
   (setq-default
+   dotspacemacs-distribution 'spacemacs
    dotspacemacs-configuration-layer-path '()
    dotspacemacs-configuration-layers
    `(
@@ -62,14 +65,14 @@
 (defun dotspacemacs/init ()
   "Initialization function.
 This function is called at the very startup of Spacemacs initialization
-before layers configuration."
+before layers configuration.
+You should not put any user code in there besides modifying the variable
+values."
   (setq-default
    dotspacemacs-editing-style 'hybrid
    dotspacemacs-verbose-loading nil
    dotspacemacs-startup-banner 'official
-   dotspacemacs-always-show-changelog t
    dotspacemacs-startup-lists '(recents projects)
-   dotspacemacs-startup-recent-list-size 5
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
                          monokai)
@@ -84,8 +87,15 @@ before layers configuration."
    dotspacemacs-major-mode-leader-key ","
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
    dotspacemacs-command-key ":"
+   dotspacemacs-remap-Y-to-y$ t
+   dotspacemacs-auto-save-file-location 'cache
+   dotspacemacs-use-ido nil
+   dotspacemacs-helm-resize nil
+   dotspacemacs-helm-no-header nil
+   dotspacemacs-helm-position 'bottom
    dotspacemacs-enable-paste-micro-state t
    dotspacemacs-which-key-delay 0.4
+   dotspacemacs-which-key-position 'right-then-bottom
    dotspacemacs-loading-progress-bar t
    dotspacemacs-fullscreen-at-startup nil
    dotspacemacs-fullscreen-use-non-native nil
@@ -101,6 +111,9 @@ before layers configuration."
    dotspacemacs-default-package-repository nil))
 
 (defun dotspacemacs/user-init ()
+  "Initialization function for user code.
+It is called immediately after `dotspacemacs/init'.  You are free to put any
+user code."
   (setq-default git-magit-status-fullscreen t)
   (setq save-interprogram-paste-before-kill t)
   (if (fboundp 'advice-add)
@@ -110,9 +123,9 @@ before layers configuration."
       (my-post-theme-init theme))))
 
 (defun dotspacemacs/user-config ()
-  "Configuration function.
+  "Configuration function for user code.
  This function is called at the very end of Spacemacs initialization after
-layers configuration."
+layers configuration. You are free to put any user code."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
 
@@ -124,17 +137,17 @@ layers configuration."
 
   ;; powerline changes
   (setq powerline-default-separator 'slant)
-  (spacemacs|define-mode-line-segment purpose
-    (substring (purpose--modeline-string) 2 -1)
-    :when purpose-mode)
-  ;; (unless (memq 'purpose spacemacs-mode-line-left)
-  ;;   (setq spacemacs-mode-line-left
-  ;;         (-insert-at (1+ (-elem-index 'major-mode spacemacs-mode-line-left))
+  ;; (spaceline-define-segment purpose
+  ;;   (substring (purpose--modeline-string) 2 -1)
+  ;;   :when purpose-mode)
+  ;; (unless (memq 'purpose spaceline-left)
+  ;;   (setq spaceline-left
+  ;;         (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
   ;;                     'purpose
-  ;;                     spacemacs-mode-line-left)))
+  ;;                     spaceline-left)))
   ;; (diminish 'purpose-mode)
-  (setq spacemacs-mode-line-version-controlp nil)
-  ;; (setq spacemacs-mode-line-minor-modesp nil)
+  (setq spaceline-version-control-p nil)
+  ;; (setq spaceline-minor-modes-p nil)
 
   ;; fix ffap pinging when trying to complete such as "a.is"
   (setq ffap-machine-p-known 'reject)
@@ -179,8 +192,6 @@ layers configuration."
   (setq nyan-bar-length 16)
   ;; avy
   (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-
-  (which-key-setup-side-window-right-bottom)
 
   ;; (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
   ;;             :key #'car :test #'equal)
@@ -238,14 +249,6 @@ layers configuration."
   (with-eval-after-load 'cus-edit
     (evilify Custom-mode custom-mode-map))
 
-  ;; flycheck
-  (add-to-list 'evil-motion-state-modes 'flycheck-error-list-mode)
-  (with-eval-after-load 'flycheck
-    (evil-define-key 'motion flycheck-error-list-mode-map
-      (kbd "RET") #'flycheck-error-list-goto-error
-      "j" #'flycheck-error-list-next-error
-      "k" #'flycheck-error-list-previous-error))
-
   (evil-define-key 'motion help-mode-map
     (kbd "TAB") #'forward-button)
 
@@ -262,7 +265,7 @@ layers configuration."
 
   (evil-leader/set-key "ot" #'toggle-tabs-mode)
   (evil-leader/set-key "ob" #'my-switch-buffer)
-  (evil-leader/set-key "ol" #'helm-locate)
+
 
   (require 'f)
   (when (f-exists? (f-expand "~/.emacs.d/private/machine.el"))
@@ -353,60 +356,3 @@ layers configuration."
     (helm :buffer "*helm-my-buffers*"
           :prompt "Buffer: "
           :sources (helm-make-source "My buffers" 'my-buffers-source))))
-
-
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ahs-case-fold-search nil)
- '(ahs-default-range (quote ahs-range-whole-buffer))
- '(ahs-idle-interval 0.25)
- '(ahs-idle-timer 0 t)
- '(ahs-inhibit-face-list nil)
- '(ansi-color-faces-vector
-   [default default default italic underline success warning error])
- '(ansi-color-names-vector
-   ["black" "red3" "ForestGreen" "yellow3" "blue" "magenta3" "DeepSkyBlue" "gray50"])
- '(expand-region-contract-fast-key "V")
- '(expand-region-reset-fast-key "r")
- '(fci-rule-color "#ECEFF1" t)
- '(paradox-github-token t)
- '(purpose-mode t)
- '(ring-bell-function (quote ignore) t)
- '(safe-local-variable-values
-   (quote
-    ((projectile-tags-file-name . "cscope.out")
-     (cscope-option-do-not-update-database . t))))
- '(vc-annotate-background nil)
- '(vc-annotate-color-map
-   (quote
-    ((20 . "#FF5722")
-     (40 . "#ff9800")
-     (60 . "#fbc02d")
-     (80 . "#558b2f")
-     (100 . "#00796b")
-     (120 . "#2196f3")
-     (140 . "#4527A0")
-     (160 . "#FF5722")
-     (180 . "#ff9800")
-     (200 . "#fbc02d")
-     (220 . "#558b2f")
-     (240 . "#00796b")
-     (260 . "#2196f3")
-     (280 . "#4527A0")
-     (300 . "#FF5722")
-     (320 . "#ff9800")
-     (340 . "#fbc02d")
-     (360 . "#558b2f"))))
- '(vc-annotate-very-old-color nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
- '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
