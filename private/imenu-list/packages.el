@@ -27,6 +27,6 @@
       (evil-leader/set-key "bi" #'imenu-list-minor-mode))
     :config
     (progn
-      (evilify imenu-list-major-mode imenu-list-major-mode-map
+      (evilified-state-evilify imenu-list-major-mode imenu-list-major-mode-map
                "d" #'imenu-list-display-entry
                "q" #'imenu-list-minor-mode))))

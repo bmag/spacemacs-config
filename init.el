@@ -12,55 +12,57 @@ values."
    dotspacemacs-configuration-layers
    `(
      (auto-completion :variables
-                      auto-completion-enable-help-tooltip t
-                      auto-completion-enable-sort-by-usage t)
+                      auto-completion-enable-help-tooltip nil
+                      auto-completion-enable-sort-by-usage nil
+                      auto-completion-enable-snippets-in-popup t)
      ;; better-defaults
-     git
+     (git :variables git-magit-status-fullscreen t)
      version-control
      markdown
      org
-     syntax-checking
-     ;; ycmd
-     evil-commentary                    ; replaces evilnc (nerd commentor)
+     (syntax-checking :variables
+                      flycheck-check-syntax-automatically '(save mode-enabled))
 
      ;; additional contrib layers
      c-c++
-     clojure
+     (clojure :variables clojure-enable-fancify-symbols t)
      emacs-lisp
-     html
-     javascript
+     ;; html
+     ;; javascript
      python
-     php
+     ;; php
      ;; sql
 
      (shell :variables shell-default-shell 'shell)
-     gtags
-     cscope
+     ;; gtags
+     ;; cscope
      search-engine
-     unimpaired
      ;; evil-snipe
+     ibuffer
 
      smex
      themes-megapack
 
-     perspectives
      eyebrowse
      window-purpose
-     (colors :variables colors-enable-nyan-cat-progress-bar ,(display-graphic-p))
+     colors
 
      ;; private layers
-     python-private
+     ;; python-private
+     my-smartparens
+     ;; multiple-cursors
      command-log
      imenu-list
-     misc
-     ;; helm-smex
+     beacon
+     ;; misc
      ;; winconf
      ;; winconf2
+     winconf3
      )
    dotspacemacs-additional-packages
-   '(nlinum let-alist irfc f tabbar tabbar-ruler jinja2-mode)
+   '(nlinum let-alist irfc f jinja2-mode helm-company help-fns+)
    dotspacemacs-excluded-packages '(drupal-mode)
-   dotspacemacs-delete-orphan-packages t))
+   dotspacemacs-delete-orphan-packages nil))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -78,7 +80,7 @@ values."
                          monokai)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Sauce Code Powerline"
-                               :size 13
+                               :size 12
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -88,7 +90,11 @@ values."
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
    dotspacemacs-command-key ":"
    dotspacemacs-remap-Y-to-y$ t
+   dotspacemacs-default-layout-name "Default"
+   dotspacemacs-display-default-layout nil
+   dotspacemacs-auto-resume-layouts nil
    dotspacemacs-auto-save-file-location 'cache
+   dotspacemacs-max-rollback-slots 10
    dotspacemacs-use-ido nil
    dotspacemacs-helm-resize nil
    dotspacemacs-helm-no-header nil
@@ -104,48 +110,49 @@ values."
    dotspacemacs-inactive-transparency 90
    dotspacemacs-mode-line-unicode-symbols t
    dotspacemacs-smooth-scrolling t
+   dotspacemacs-line-numbers nil
    dotspacemacs-smartparens-strict-mode nil
    dotspacemacs-highlight-delimiters 'all
    dotspacemacs-persistent-server nil
    dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
-   dotspacemacs-default-package-repository nil))
+   dotspacemacs-default-package-repository nil
+   dotspacemacs-whitespace-cleanup 'changed))
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
 It is called immediately after `dotspacemacs/init'.  You are free to put any
 user code."
-  (setq-default git-magit-status-fullscreen t)
   (setq save-interprogram-paste-before-kill t)
   (if (fboundp 'advice-add)
       (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
     (defadvice spacemacs/post-theme-init (after my-post-theme-init-adv activate)
       "Call `my-post-theme-init'."
-      (my-post-theme-init theme))))
+      (my-post-theme-init theme)))
+  )
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
- This function is called at the very end of Spacemacs initialization after
+This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
   (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
 
-  ;; (define-key evil-normal-state-map (kbd ";") #'smex)
-  ;; (define-key evil-motion-state-map (kbd ";") #'smex)
-  ;; evil-snipe to repeat f/F/t/T by reptead typing of f/F/t/T, frees
-  ;; ; for smex
-  ;; (evil-snipe-override-mode)
+  (add-hook 'prog-mode-hook 'evil-mc-mode)
+  (add-hook 'text-mode-hook 'evil-mc-mode)
+  (with-eval-after-load 'evil-mc
+    (diminish 'evil-mc-mode))
 
   ;; powerline changes
   (setq powerline-default-separator 'slant)
-  ;; (spaceline-define-segment purpose
-  ;;   (substring (purpose--modeline-string) 2 -1)
-  ;;   :when purpose-mode)
-  ;; (unless (memq 'purpose spaceline-left)
-  ;;   (setq spaceline-left
-  ;;         (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
-  ;;                     'purpose
-  ;;                     spaceline-left)))
-  ;; (diminish 'purpose-mode)
+  (spaceline-define-segment purpose
+    (substring (purpose--modeline-string) 2 -1)
+    :when purpose-mode)
+  (unless (memq 'purpose spaceline-left)
+    (setq spaceline-left
+          (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
+                      'purpose
+                      spaceline-left)))
+  (diminish 'purpose-mode)
   (setq spaceline-version-control-p nil)
   ;; (setq spaceline-minor-modes-p nil)
 
@@ -168,17 +175,9 @@ layers configuration. You are free to put any user code."
   (evil-leader/set-key
     "oh" #'helm-comint-input-ring)
 
-  ;; desktop save mode
-  ;; (setq desktop-path (list spacemacs-cache-directory))
-  ;; (desktop-save-mode)
-  ;; (desktop-read)
-
   ;; smartparens (highlighting)
   (setq sp-highlight-pair-overlay nil)
-  (setq sp-show-pair-from-inside t)
-
-  ;; ycmd
-  ;; (setq ycmd-server-command `("python" ,(expand-file-name "~/src/ycmd/ycmd/__main__.py")))
+  (show-smartparens-global-mode -1)
 
   (setq frame-title-format "Spacemacs")
 
@@ -190,24 +189,23 @@ layers configuration. You are free to put any user code."
 
   ;; nyan-mode
   (setq nyan-bar-length 16)
-  ;; avy
-  (setq avy-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
   ;; (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
   ;;             :key #'car :test #'equal)
   ;; window-purpose
   (with-eval-after-load 'window-purpose
     (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
+    (cl-pushnew '(cider-repl-mode . terminal) purpose-user-mode-purposes :key #'car)
     (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
                 :key #'car :test #'equal)
     (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
     (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
     (cl-pushnew '(".travis.yml" . edit) purpose-user-name-purposes
                 :key #'car :test #'equal)
-    (purpose-compile-user-configuration)
+    ;; (purpose-compile-user-configuration)
 
-    (when (require 'window-purpose-x nil t)
-      (purpose-x-magit-single-on))
+    ;; (when (require 'window-purpose-x nil t)
+    ;;   (purpose-x-magit-single-on))
 
     ;; because of winconf2
     ;; (popwin-mode -1)
@@ -215,62 +213,32 @@ layers configuration. You are free to put any user code."
     ;; (setq popwin:special-display-config
     ;;       (cl-delete "*Help*" popwin:special-display-config
     ;;                  :key #'car :test #'equal))
-    (pupo/update-purpose-config)
+    ;; (pupo/update-purpose-config)
     )
-
-  ;; eyebrowse
-  (with-eval-after-load 'eyebrowse
-    (dolist (index (mapcar #'number-to-string '(0 1 2 3 4 5 6 7 8 9)))
-      (define-key eyebrowse-mode-map
-        (kbd (concat "M-" index))
-        (intern-soft (concat "eyebrowse-switch-to-window-config-" index)))
-      (define-key window-numbering-keymap
-        (kbd (concat "M-" index)) nil)))
 
   ;; nlinum
   (spacemacs|add-toggle line-numbers
-                        :status nlinum-mode
-                        :on (global-nlinum-mode)
-                        :off (global-nlinum-mode -1)
-                        :documentation "Show the line numbers."
-                        :evil-leader "tn")
-
-  ;; centered-cursor
-  ;; (add-hook 'prog-mode-hook #'centered-cursor-mode)
-  ;; (add-hook 'text-mode-hook #'centered-cursor-mode)
+    :status nlinum-mode
+    :on (global-nlinum-mode)
+    :off (global-nlinum-mode -1)
+    :documentation "Show the line numbers."
+    :evil-leader "tn")
 
   ;; irfc
   (with-eval-after-load 'irfc-mode
-    (evilify irfc-mode irfc-mode-map
+    (evilified-state-evilify irfc-mode irfc-mode-map
              "g" #'irfc-table-jump
              "G" #'irfc-page-goto))
 
   ;; customize
   (with-eval-after-load 'cus-edit
-    (evilify Custom-mode custom-mode-map))
+    (evilified-state-evilify Custom-mode custom-mode-map))
 
-  (evil-define-key 'motion help-mode-map
-    (kbd "TAB") #'forward-button)
-
-  (defun toggle-tabs-mode ()
-    (interactive)
-    (setq indent-tabs-mode (not indent-tabs-mode)))
-
-  (with-eval-after-load 'helm
-    (define-key helm-map (kbd "C-M-h") #'help-command))
+  ;; (with-eval-after-load 'helm
+  ;;   (define-key helm-map (kbd "C-M-h") #'help-command))
   (setq helm-locate-fuzzy-match nil)
 
-  ;; (define-key evil-motion-state-map (kbd "0") #'evil-first-non-blank)
-  ;; (define-key evil-motion-state-map (kbd "0") #'evil-digit-argument-or-evil-beginning-of-line)
-
-  (evil-leader/set-key "ot" #'toggle-tabs-mode)
-  (evil-leader/set-key "ob" #'my-switch-buffer)
-
-
-  (require 'f)
-  (when (f-exists? (f-expand "~/.emacs.d/private/machine.el"))
-    (load-file (f-expand "~/.emacs.d/private/machine.el"))
-    (load-machine-config)))
+  )
 
 (defun my-post-theme-init (theme)
   "Personal additions to themes."
@@ -321,6 +289,10 @@ layers configuration. You are free to put any user code."
        `(diff-hl-delete ((t (:foreground ,war :background "#361800"))))
        `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
        `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
+       ;; `(imenu-list-entry-face-0 ((t (:foreground "#bc6ec5"))))
+       ;; `(imenu-list-entry-face-1 ((t (:foreground "#2f96dc"))))
+       ;; `(imenu-list-entry-face-2 ((t (:foreground "#67b11d"))))
+
        ;; `popup-tip-face' used by flycheck tips
        ;; `(popup-tip-face ((t (:foreground ,cursor :background ,active2 :bold nil))))
        ;; `(popup-tip-face ((t (:foreground "black" :background ,comment :bold nil :box t))))
@@ -328,31 +300,3 @@ layers configuration. You are free to put any user code."
        ;; `(tooltip ((t (:foreground ,active1 :background "#ad9dca"))))
        ;; `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
        )))))
-
-(with-eval-after-load 'helm-buffers
-  (defclass my-buffers-source (helm-source-buffers)
-    ((buffer-list
-      :initform (lambda ()
-                  (let* ((current-buffer (current-buffer))
-                         (persp-p (fboundp 'persp-buffers))
-                         (persp-buffs (and persp-p (persp-buffers persp-curr)))
-                         (proj-p (and (fboundp 'projectile-project-buffers)
-                                      (projectile-project-p)))
-                         (proj-buffs (and proj-p (projectile-project-buffers)))
-                         (purp-p (fboundp 'purpose-buffer-purpose))
-                         (current-purpose (and purp-p (purpose-buffer-purpose current-buffer))))
-                    (cl-loop for buffer in (buffer-list)
-                             if (and (or (not persp-p)
-                                         (memq buffer persp-buffs))
-                                     (or (not proj-p)
-                                         (memq buffer proj-buffs))
-                                     (or (not purp-p)
-                                         (eq (purpose-buffer-purpose buffer) current-purpose))
-                                     (not (eq buffer current-buffer)))
-                             collect (buffer-name buffer)))))))
-
-  (defun my-switch-buffer ()
-    (interactive)
-    (helm :buffer "*helm-my-buffers*"
-          :prompt "Buffer: "
-          :sources (helm-make-source "My buffers" 'my-buffers-source))))

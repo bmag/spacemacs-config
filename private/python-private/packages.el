@@ -21,7 +21,7 @@
 ;;   (setq anaconda-mode-server-directory "/usr/local/lib/python2.7/dist-packages"))
 
 (defun python-private/post-init-anaconda-mode ()
-  (evilify anaconda-mode-view-mode anaconda-mode-view-mode-map
+  (evilified-state-evilify anaconda-mode-view-mode anaconda-mode-view-mode-map
            "j" #'forward-button
            "k" #'backward-button
            "J" #'next-error-no-select
