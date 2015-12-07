@@ -22,6 +22,7 @@ values."
      org
      (syntax-checking :variables
                       flycheck-check-syntax-automatically '(save mode-enabled))
+     evil-cleverparens
 
      ;; additional contrib layers
      c-c++
@@ -42,6 +43,7 @@ values."
 
      smex
      themes-megapack
+     theming
 
      eyebrowse
      window-purpose
@@ -49,15 +51,15 @@ values."
 
      ;; private layers
      ;; python-private
-     my-smartparens
+     ;; my-smartparens
      ;; multiple-cursors
-     command-log
+     ;; command-log
      imenu-list
      beacon
      ;; misc
      ;; winconf
      ;; winconf2
-     winconf3
+     ;; winconf3
      )
    dotspacemacs-additional-packages
    '(nlinum let-alist irfc f jinja2-mode helm-company help-fns+)
@@ -71,10 +73,13 @@ before layers configuration.
 You should not put any user code in there besides modifying the variable
 values."
   (setq-default
+   dotspacemacs-elpa-https t
+   dotspacemacs-elpa-timeout 5
    dotspacemacs-editing-style 'hybrid
    dotspacemacs-verbose-loading nil
    dotspacemacs-startup-banner 'official
    dotspacemacs-startup-lists '(recents projects)
+   dotspacemacs-startup-recent-list-size 10
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
                          monokai)
@@ -94,12 +99,12 @@ values."
    dotspacemacs-display-default-layout nil
    dotspacemacs-auto-resume-layouts nil
    dotspacemacs-auto-save-file-location 'cache
-   dotspacemacs-max-rollback-slots 10
+   dotspacemacs-max-rollback-slots 7
    dotspacemacs-use-ido nil
    dotspacemacs-helm-resize nil
    dotspacemacs-helm-no-header nil
    dotspacemacs-helm-position 'bottom
-   dotspacemacs-enable-paste-micro-state t
+   dotspacemacs-enable-paste-micro-state nil
    dotspacemacs-which-key-delay 0.4
    dotspacemacs-which-key-position 'right-then-bottom
    dotspacemacs-loading-progress-bar t
@@ -111,7 +116,7 @@ values."
    dotspacemacs-mode-line-unicode-symbols t
    dotspacemacs-smooth-scrolling t
    dotspacemacs-line-numbers nil
-   dotspacemacs-smartparens-strict-mode nil
+   dotspacemacs-smartparens-strict-mode t
    dotspacemacs-highlight-delimiters 'all
    dotspacemacs-persistent-server nil
    dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
@@ -123,19 +128,37 @@ values."
 It is called immediately after `dotspacemacs/init'.  You are free to put any
 user code."
   (setq save-interprogram-paste-before-kill t)
-  (if (fboundp 'advice-add)
-      (advice-add 'spacemacs/post-theme-init :after 'my-post-theme-init)
-    (defadvice spacemacs/post-theme-init (after my-post-theme-init-adv activate)
-      "Call `my-post-theme-init'."
-      (my-post-theme-init theme)))
-  )
+  (let ((active1 "#222226") (active2 "#5d4d7a")
+        (base "#b2b2b2") (cursor "#e3dedd")
+        (comment "#2aa198") (comment-bg "#293234")
+        (bg1 "#292b2e") (bg2 "#212026")
+        (bg3 "#100a14") (bg4 "#0a0814")
+        (war "#dc752f") (inf "#2f96dc") (green "#67b11d"))
+    (setq theming-modifications
+          `((spacemacs-dark
+             (diff-hl-change :foreground ,inf :background "#001836")
+             (diff-hl-delete :foreground ,war :background "#361800")
+             (diff-hl-insert :foreground ,green :background "#003618")
+             ;; (helm-visible-mark :foreground ,green :background ,bg4)
+             ;; `(imenu-list-entry-face-0 ((t (:foreground "#bc6ec5"))))
+             ;; `(imenu-list-entry-face-1 ((t (:foreground "#2f96dc"))))
+             ;; `(imenu-list-entry-face-2 ((t (:foreground "#67b11d"))))
+
+             ;; `popup-tip-face' used by flycheck tips
+             ;; `(popup-tip-face :foreground ,cursor :background ,active2 :bold nil)
+             ;; `(popup-tip-face :foreground "black" :background ,comment :bold nil :box t)
+             ;; `tooltip' used by company-quickhelp tips
+             ;; `(tooltip :foreground ,active1 :background "#ad9dca")
+             ;; `(tooltip :foreground "#efefef" :background "#4d3d6a")
+             )))))
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
-  (my-post-theme-init (car dotspacemacs-themes))
   (setq evil-escape-delay 0.2)
+
+  (add-hook 'smartparens-enabled-hook #'evil-cleverparens-mode)
 
   (add-hook 'prog-mode-hook 'evil-mc-mode)
   (add-hook 'text-mode-hook 'evil-mc-mode)
@@ -143,16 +166,16 @@ layers configuration. You are free to put any user code."
     (diminish 'evil-mc-mode))
 
   ;; powerline changes
-  (setq powerline-default-separator 'slant)
-  (spaceline-define-segment purpose
-    (substring (purpose--modeline-string) 2 -1)
-    :when purpose-mode)
-  (unless (memq 'purpose spaceline-left)
-    (setq spaceline-left
-          (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
-                      'purpose
-                      spaceline-left)))
-  (diminish 'purpose-mode)
+  (setq powerline-default-separator 'alternate)
+  ;; (spaceline-define-segment purpose
+  ;;   (substring (purpose--modeline-string) 2 -1)
+  ;;   :when purpose-mode)
+  ;; (unless (memq 'purpose spaceline-left)
+  ;;   (setq spaceline-left
+  ;;         (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
+  ;;                     'purpose
+  ;;                     spaceline-left)))
+  ;; (diminish 'purpose-mode)
   (setq spaceline-version-control-p nil)
   ;; (setq spaceline-minor-modes-p nil)
 
@@ -192,29 +215,30 @@ layers configuration. You are free to put any user code."
 
   ;; (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
   ;;             :key #'car :test #'equal)
+
   ;; window-purpose
-  (with-eval-after-load 'window-purpose
-    (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
-    (cl-pushnew '(cider-repl-mode . terminal) purpose-user-mode-purposes :key #'car)
-    (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
-                :key #'car :test #'equal)
-    (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
-    (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
-    (cl-pushnew '(".travis.yml" . edit) purpose-user-name-purposes
-                :key #'car :test #'equal)
-    ;; (purpose-compile-user-configuration)
+  ;; (with-eval-after-load 'window-purpose
+  ;;   (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
+  ;;   (cl-pushnew '(cider-repl-mode . terminal) purpose-user-mode-purposes :key #'car)
+  ;;   (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
+  ;;               :key #'car :test #'equal)
+  ;;   (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
+  ;;   (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
+  ;;   (cl-pushnew '(".travis.yml" . edit) purpose-user-name-purposes
+  ;;               :key #'car :test #'equal)
+  ;;   ;; (purpose-compile-user-configuration)
 
-    ;; (when (require 'window-purpose-x nil t)
-    ;;   (purpose-x-magit-single-on))
+  ;;   ;; (when (require 'window-purpose-x nil t)
+  ;;   ;;   (purpose-x-magit-single-on))
 
-    ;; because of winconf2
-    ;; (popwin-mode -1)
-    ;; (pupo-mode -1)
-    ;; (setq popwin:special-display-config
-    ;;       (cl-delete "*Help*" popwin:special-display-config
-    ;;                  :key #'car :test #'equal))
-    ;; (pupo/update-purpose-config)
-    )
+  ;;   ;; because of winconf2
+  ;;   ;; (popwin-mode -1)
+  ;;   ;; (pupo-mode -1)
+  ;;   ;; (setq popwin:special-display-config
+  ;;   ;;       (cl-delete "*Help*" popwin:special-display-config
+  ;;   ;;                  :key #'car :test #'equal))
+  ;;   ;; (pupo/update-purpose-config)
+  ;;   )
 
   ;; nlinum
   (spacemacs|add-toggle line-numbers
@@ -239,64 +263,3 @@ layers configuration. You are free to put any user code."
   (setq helm-locate-fuzzy-match nil)
 
   )
-
-(defun my-post-theme-init (theme)
-  "Personal additions to themes."
-  (cond
-   ((eq theme 'tangotango)
-    (custom-theme-set-faces
-     'tangotango
-     '(diff-hl-delete ((t (:foreground "red3" :background "#553333"))))
-     '(diff-hl-insert ((t (:foreground "green4" :background "#335533"))))
-     '(diff-hl-change ((t (:foreground "blue3" :background "#333355"))))
-     '(spacemacs-mode-line-flycheck-info-face ((t (:foreground "dodger blue" :box (:line-width 1 :style released-button)))))
-     '(spacemacs-mode-line-flycheck-warning-face ((t (:foreground "#edd400" :box (:line-width 1 :style released-button)))))
-     '(spacemacs-mode-line-flycheck-error-face ((t (:foreground "tomato" :box (:line-width 1 :style released-button)))))
-     '(rainbow-delimiters-depth-1-face ((t (:foreground "#729fcf")))) ; hello
-     '(rainbow-delimiters-depth-2-face ((t (:foreground "sandy brown"))))
-     '(rainbow-delimiters-depth-3-face ((t (:foreground "green yellow"))))
-     '(rainbow-delimiters-depth-4-face ((t (:foreground "hot pink"))))
-     '(rainbow-delimiters-depth-5-face ((t (:foreground "LightGoldenrod1"))))
-     '(rainbow-delimiters-depth-6-face ((t (:foreground "light sky blue"))))
-     '(rainbow-delimiters-depth-7-face ((t (:foreground "light green"))))
-     '(rainbow-delimiters-depth-8-face ((t (:foreground "goldenrod"))))
-     '(rainbow-delimiters-depth-9-face ((t (:foreground "orchid"))))
-     '(company-tooltip ((t (:foreground "gainsboro" :background "dim gray"))))
-     '(company-tooltip-annotation ((t (:foreground "sky blue" :inherit (company-tooltip)))))
-     '(company-tooltip-selection ((t (:background "steel blue" :inherit (company-tooltip)))))
-     '(company-scrollbar-fg ((t (:background "black" :inherit (company-tooltip)))))
-     '(company-scrollbar-bg ((t (:background "dark gray" :inherit (company-tooltip)))))
-     '(helm-selection ((t (:background "dim gray" :distant-foreground "white"))))
-     '(helm-source-header ((t (:foreground "white" :box (:line-width 2 :color "grey75" :style released-button) :weight bold :height 1.1 :family "Sans Serif"))))
-     '(helm-buffer-process ((t (:foreground "light salmon"))))))
-   ((eq theme 'spacemacs-dark)
-    (let ((active1 "#222226")
-          (active2 "#5d4d7a")
-          (base "#b2b2b2")
-          (comment "#2aa198")
-          (comment-bg "#293234")
-          (cursor "#e3dedd")
-          (bg1 "#292b2e")
-          (bg2 "#212026")
-          (bg3 "#100a14")
-          (bg4 "#0a0814")
-          (war "#dc752f")
-          (inf "#2f96dc")
-          (green "#67b11d"))
-      (custom-theme-set-faces
-       'spacemacs-dark
-       `(diff-hl-change ((t (:foreground ,inf :background "#001836"))))
-       `(diff-hl-delete ((t (:foreground ,war :background "#361800"))))
-       `(diff-hl-insert ((t (:foreground ,green :background "#003618"))))
-       `(helm-visible-mark ((t (:foreground ,green :background ,bg4))))
-       ;; `(imenu-list-entry-face-0 ((t (:foreground "#bc6ec5"))))
-       ;; `(imenu-list-entry-face-1 ((t (:foreground "#2f96dc"))))
-       ;; `(imenu-list-entry-face-2 ((t (:foreground "#67b11d"))))
-
-       ;; `popup-tip-face' used by flycheck tips
-       ;; `(popup-tip-face ((t (:foreground ,cursor :background ,active2 :bold nil))))
-       ;; `(popup-tip-face ((t (:foreground "black" :background ,comment :bold nil :box t))))
-       ;; `tooltip' used by company-quickhelp tips
-       ;; `(tooltip ((t (:foreground ,active1 :background "#ad9dca"))))
-       ;; `(tooltip ((t (:foreground "#efefef" :background "#4d3d6a"))))
-       )))))
