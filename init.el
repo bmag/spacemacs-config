@@ -44,6 +44,7 @@ values."
      smex
      themes-megapack
      theming
+     command-log
 
      eyebrowse
      window-purpose
@@ -53,7 +54,6 @@ values."
      ;; python-private
      ;; my-smartparens
      ;; multiple-cursors
-     ;; command-log
      imenu-list
      beacon
      ;; misc
