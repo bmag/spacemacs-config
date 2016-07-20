@@ -11,7 +11,7 @@
 ;;; License: GPLv3
 
 (setq window-purpose-packages '(eyebrowse
-                                helm
+                                (helm-purpose :toggle (configuration-layer/layer-usedp 'spacemacs-helm))
                                 popwin
                                 (purpose-popwin :location local)
                                 window-purpose))
@@ -51,45 +51,16 @@ Set `eyebrowse-new-workspace' value depending on the state of `purpose-mode'."
     ;; sync with eyebrowse now if window-purpose was already loaded
     (window-purpose/sync-eyebrowse)))
 
-(defun window-purpose/pre-init-helm ()
-  ;; create helm sources for purpose commands, for a behavior consistent with
-  ;; `helm-mini' and other buffer-related helm commands
-  (spacemacs|use-package-add-hook helm
-    :post-init
-    (progn
-      (defun window-purpose/switch-buffer-with-purpose (&optional purpose)
-        "Switch to buffer, choose from buffers with purpose PURPOSE.
-PURPOSE defaults to the purpose of the current buffer."
-        (interactive)
-        (setq window-purpose--current-purpose
-              (or purpose (purpose-buffer-purpose (current-buffer))))
-        (helm :sources 'helm-source-purpose-buffers-list
-              :buffer "*helm purpose*"
-              :prompt "Buffer: "))
-
-      (defun window-purpose/switch-buffer-with-some-purpose ()
-        "Choose a purpose, then switch to a buffer with that purpose."
-        (interactive)
-        (window-purpose/switch-buffer-with-purpose
-         (purpose-read-purpose "Purpose: "
-                               ;; don't show purposes that have no buffers
-                               (cl-delete-if-not #'purpose-buffers-with-purpose
-                                                 (purpose-get-all-purposes))
-                               t))))
-    :post-config
-    (progn
-      (require 'helm-buffers)
-      (defvar window-purpose--current-purpose 'edit)
-      (defvar helm-source-purpose-buffers-list
-        (helm-make-source "Purpose buffers" 'helm-source-buffers
-          :buffer-list
-          (lambda ()
-            ;; return names of buffers with the same purpose as current buffer,
-            ;; excluding current buffer
-            (mapcar #'buffer-name
-                    (delq (current-buffer)
-                          (purpose-buffers-with-purpose
-                           window-purpose--current-purpose)))))))))
+(when (configuration-layer/layer-usedp 'spacemacs-helm)
+  (defun window-purpose/init-helm-purpose ()
+    (setq purpose-preferred-prompt 'helm)
+    ;; remap bindings defined with `spacemacs/set-leader-keys'
+    (global-set-key [remap purpose-switch-buffer-with-purpose]
+                    #'helm-purpose-switch-buffer-with-purpose)
+    (global-set-key [remap switch-buffer-without-purpose]
+                    #'helm-purpose-mini-ignore-purpose)
+    (global-set-key [remap purpose-switch-buffer-with-some-purpose]
+                    #'helm-purpose-switch-buffer-with-some-purpose)))
 
 (defun window-purpose/post-init-popwin ()
   ;; when popwin creates a popup window, it removes the `purpose-dedicated'
@@ -137,18 +108,23 @@ Enable or disable advices to popwin, according to the state of `purpose-mode'."
     (window-purpose/sync-popwin)))
 
 (defun window-purpose/init-purpose-popwin ()
-  ;; purpose-popwin needs to be configured after popwin and window-purpose.
-  ;; popwin is guaranteed to run after purpose-popwin due to alphabetic order,
-  ;; but for window-purpose we need `with-eval-after-load'
-  (with-eval-after-load 'window-purpose
-    (use-package purpose-popwin
-      :config
-      (progn
-        (pupo-mode)
-        ;; override popwin commands with pupo commands
-        (evil-leader/set-key
-          "wpp" #'pupo/close-window
-          "wpP" #'pupo/close-all-windows)))))
+  (use-package purpose-popwin
+    ;; don't load purpose-popwin if popwin is excluded.
+    ;; can't wrap `window-purpose/init-purpose-popwin' in a top-level `when'
+    ;; because popwin isn't yet marked as used then. the condition won't work in
+    ;; top-level, only here
+    :if (configuration-layer/package-usedp 'popwin)
+    ;; purpose-popwin needs to be configured after popwin and window-purpose.
+    ;; popwin is guaranteed to run before purpose-popwin due to alphabetic order,
+    ;; but for window-purpose we need to use :after
+    :after window-purpose
+    :config
+    (progn
+      (pupo-mode)
+      ;; override popwin commands with pupo commands
+      (spacemacs/set-leader-keys
+        "wpp" #'pupo/close-window
+        "wpP" #'pupo/close-all-windows))))
 
 (defun window-purpose/init-window-purpose ()
   (use-package window-purpose
@@ -160,22 +136,14 @@ Enable or disable advices to popwin, according to the state of `purpose-mode'."
     :config
     (progn
       ;; 'r' is for "puRpose" ('w', 'p' are crowded, 'W', 'P' aren't comfortable)
-      (evil-leader/set-key
-        "rb" 'window-purpose/switch-buffer-with-purpose
-        "rB" 'window-purpose/helm-mini-ignore-purpose
+      (spacemacs/set-leader-keys
+        "rb" 'purpose-switch-buffer-with-purpose
+        "rB" 'switch-buffer-without-purpose
         "rd" 'purpose-toggle-window-purpose-dedicated
         "rD" 'purpose-delete-non-dedicated-windows
-        "rp" 'window-purpose/switch-buffer-with-some-purpose
+        "rp" 'purpose-switch-buffer-with-some-purpose
         "rP" 'purpose-set-window-purpose)
-      ;; not respecting the value of `dotspacemacs-use-ido', because nearly
-      ;; nothing in spacemacs seems to respect it anyway
-      (setq purpose-preferred-prompt 'helm)
-      (defalias 'window-purpose/helm-mini-ignore-purpose
-        (without-purpose-command #'helm-mini)
-        "Same as `helm-mini', but disable window-purpose while this command executes.")
 
-      ;; *LV* buffer is used by corelv.el
-      (add-to-list 'purpose-action-function-ignore-buffer-names "^\\*LV\\*$")
       (purpose-mode)
       (purpose-x-golden-ratio-setup)
       ;; when killing a purpose-dedicated buffer that is displayed in a window,

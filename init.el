@@ -7,64 +7,103 @@
 You should not put any user code in this function besides modifying the variable
 values."
   (setq-default
+   ;; Base distribution to use. This is a layer contained in the directory
+   ;; `+distribution'. For now available distributions are `spacemacs-base'
+   ;; or `spacemacs'. (default 'spacemacs)
    dotspacemacs-distribution 'spacemacs
-   dotspacemacs-configuration-layer-path '()
+   ;; Lazy installation of layers (i.e. layers are installed only when a file
+   ;; with a supported type is opened). Possible values are `all', `unused'
+   ;; and `nil'. `unused' will lazy install only unused layers (i.e. layers
+   ;; not listed in variable `dotspacemacs-configuration-layers'), `all' will
+   ;; lazy install any layer that support lazy installation even the layers
+   ;; listed in `dotspacemacs-configuration-layers'. `nil' disable the lazy
+   ;; installation feature and you have to explicitly list a layer in the
+   ;; variable `dotspacemacs-configuration-layers' to install it.
+   ;; (default 'unused)
+   dotspacemacs-enable-lazy-installation nil
+   ;; If non-nil then Spacemacs will ask for confirmation before installing
+   ;; a layer lazily. (default t)
+   dotspacemacs-ask-for-lazy-installation t
+   ;; If non-nil layers with lazy install support are lazy installed.
+   ;; List of additional paths where to look for configuration layers.
+   ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
+   dotspacemacs-configuration-layer-path '("~/.spacemacs.d/")
+   ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   `(
+   '(
+     ;; completion layer
+     helm
+     ;; ivy
+
+     ;; tools
      (auto-completion :variables
-                      auto-completion-enable-help-tooltip nil
-                      auto-completion-enable-sort-by-usage nil
-                      auto-completion-enable-snippets-in-popup t)
-     ;; better-defaults
-     (git :variables git-magit-status-fullscreen t)
-     version-control
-     markdown
-     org
-     (syntax-checking :variables
-                      flycheck-check-syntax-automatically '(save mode-enabled))
-     evil-cleverparens
-
-     ;; additional contrib layers
-     c-c++
-     (clojure :variables clojure-enable-fancify-symbols t)
-     emacs-lisp
-     ;; html
-     ;; javascript
-     python
-     ;; php
-     ;; sql
-
-     (shell :variables shell-default-shell 'shell)
-     ;; gtags
-     ;; cscope
-     search-engine
-     ;; evil-snipe
-     ibuffer
-
-     smex
-     themes-megapack
-     theming
+                      auto-completion-complete-with-key-sequence "jk"
+                      auto-completion-complete-with-key-sequence-delay 0.5
+                      auto-completion-enable-snippets-in-popup nil
+                      auto-completion-enable-help-tooltip t
+                      company-tooltip-align-annotations t)
      command-log
+     evil-cleverparens
+     (git :variables git-magit-status-fullscreen t)
+     ;; gtags
+     ibuffer
+     imenu-list
+     nlinum
+     org
+     pdf-tools
+     ;; ranger
+     (shell :variables
+            shell-default-shell 'shell
+            shell-default-height 30
+            shell-default-position 'bottom)
+     smex
+     syntax-checking
+     version-control
 
-     eyebrowse
-     window-purpose
-     colors
+     ;; languages
+     c-c++
+     (clojure :variables
+              clojure-enable-fancify-symbols nil)
+     emacs-lisp
+     (latex :variables
+            latex-enable-auto-fill t
+            latex-enable-folding t)
+     markdown
+     octave
+     python
+     ruby
 
      ;; private layers
-     ;; python-private
-     ;; my-smartparens
-     ;; multiple-cursors
-     imenu-list
-     beacon
-     ;; misc
-     ;; winconf
-     ;; winconf2
-     ;; winconf3
+     common-lisp
+     ;; disabled nameless because it delays opening of elisp files significally
+     ;; (~2-3 seconds)
+     ;; nameless
+     window-purpose
+
+     ;; themes
+     themes-megapack
+     (theming :variables
+              theming-modifications
+              '((spacemacs-dark (aw-leading-char-face :foreground "red" :height 3.0))
+                (spacemacs-light (aw-leading-char-face :foreground "red" :height 3.0))
+                (monokai (aw-leading-char-face :foreground "red" :height 3.0))
+                (flatland (aw-leading-char-face :foreground "red" :height 3.0))))
      )
-   dotspacemacs-additional-packages
-   '(nlinum let-alist irfc f jinja2-mode helm-company help-fns+)
-   dotspacemacs-excluded-packages '(drupal-mode)
-   dotspacemacs-delete-orphan-packages nil))
+   ;; List of additional packages that will be installed without being
+   ;; wrapped in a layer. If you need some configuration for these
+   ;; packages, then consider creating a layer. You can also put the
+   ;; configuration in `dotspacemacs/user-config'.
+   dotspacemacs-additional-packages '(tabbar-ruler flycheck-package vimrc-mode buttercup el-mock)
+   ;; A list of packages that will not be install and loaded.
+   dotspacemacs-excluded-packages '()
+   ;; Defines the behaviour of Spacemacs when downloading packages.
+   ;; Possible values are `used', `used-but-keep-unused' and `all'. `used' will
+   ;; download only explicitly used packages and remove any unused packages as
+   ;; well as their dependencies. `used-but-keep-unused' will download only the
+   ;; used packages but won't delete them if they become unused. `all' will
+   ;; download all the packages regardless if they are used or not and packages
+   ;; won't be deleted by Spacemacs. (default is `used')
+   dotspacemacs-download-packages 'used-but-keep-unused))
 
 (defun dotspacemacs/init ()
   "Initialization function.
@@ -72,194 +111,378 @@ This function is called at the very startup of Spacemacs initialization
 before layers configuration.
 You should not put any user code in there besides modifying the variable
 values."
+  ;; This setq-default sexp is an exhaustive list of all the supported
+  ;; spacemacs settings.
   (setq-default
+   ;; If non nil ELPA repositories are contacted via HTTPS whenever it's
+   ;; possible. Set it to nil if you have no way to use HTTPS in your
+   ;; environment, otherwise it is strongly recommended to let it set to t.
+   ;; This variable has no effect if Emacs is launched with the parameter
+   ;; `--insecure' which forces the value of this variable to nil.
+   ;; (default t)
    dotspacemacs-elpa-https t
+   ;; Maximum allowed time in seconds to contact an ELPA repository.
    dotspacemacs-elpa-timeout 5
-   dotspacemacs-editing-style 'hybrid
+   ;; If non nil then spacemacs will check for updates at startup
+   ;; when the current branch is not `develop'. (default t)
+   dotspacemacs-check-for-update t
+
+   ;; `dotspacemacs-enable-multiple-emacs-version' doesn't exist yet, it's just
+   ;; part of a PR for now.
+   ;; If non nil, different emacs versions have different package directories.
+   ;; e.g. for Emacs 24.5, packages are stored in elpa/24.5/. Rollback
+   ;; directories are also separated.
+   dotspacemacs-enable-multiple-emacs-version t
+   ;; One of `vim', `emacs' or `hybrid'.
+   ;; `hybrid' is like `vim' except that `insert state' is replaced by the
+   ;; `hybrid state' with `emacs' key bindings. The value can also be a list
+   ;; with `:variables' keyword (similar to layers). Check the editing styles
+   ;; section of the documentation for details on available variables.
+   ;; (default 'vim)
+   dotspacemacs-editing-style '(hybrid :variables
+                                       hybrid-mode-default-state 'normal
+                                       hybrid-mode-enable-evilified-state t
+                                       hybrid-mode-enable-hjkl-bindings nil)
+   ;; If non nil output loading progress in `*Messages*' buffer. (default nil)
    dotspacemacs-verbose-loading nil
+   ;; Specify the startup banner. Default value is `official', it displays
+   ;; the official spacemacs logo. An integer value is the index of text
+   ;; banner, `random' chooses a random text banner in `core/banners'
+   ;; directory. A string value must be a path to an image format supported
+   ;; by your Emacs build.
+   ;; If the value is nil then no banner is displayed. (default 'official)
    dotspacemacs-startup-banner 'official
-   dotspacemacs-startup-lists '(recents projects)
-   dotspacemacs-startup-recent-list-size 10
+   ;; List of items to show in startup buffer or an association list of of
+   ;; the form `(list-type . list-size)`. If nil it is disabled.
+   ;; Possible values for list-type are:
+   ;; `recents' `bookmarks' `projects' `agenda' `todos'."
+   dotspacemacs-startup-lists '((recents . 10)
+                                (projects . 7))
+   ;; Default major mode of the scratch buffer (default `text-mode')
+   dotspacemacs-scratch-mode 'emacs-lisp-mode
+   ;; List of themes, the first of the list is loaded when spacemacs starts.
+   ;; Press <SPC> T n to cycle to the next theme in the list (works great
+   ;; with 2 themes variants, one dark and one light)
    dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light
-                         monokai)
+                         monokai
+                         flatland)
+   ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
-   dotspacemacs-default-font '("Sauce Code Powerline"
-                               :size 12
+   ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
+   ;; quickly tweak the mode-line size to make separators look not too crappy.
+   dotspacemacs-default-font '("Source Code Pro"
+                               :size 14
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
+   ;; The leader key
    dotspacemacs-leader-key "SPC"
+   ;; The leader key accessible in `emacs state' and `insert state'
+   ;; (default "M-m")
    dotspacemacs-emacs-leader-key "M-m"
+   ;; Major mode leader key is a shortcut key which is the equivalent of
+   ;; pressing `<leader> m`. Set it to `nil` to disable it. (default ",")
    dotspacemacs-major-mode-leader-key ","
+   ;; Major mode leader key accessible in `emacs state' and `insert state'.
+   ;; (default "C-M-m)
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
-   dotspacemacs-command-key ":"
+   ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
+   ;; (default "SPC")
+   dotspacemacs-emacs-command-key "SPC"
+   ;; These variables control whether separate commands are bound in the GUI to
+   ;; the key pairs C-i, TAB and C-m, RET.
+   ;; Setting it to a non-nil value, allows for separate commands under <C-i>
+   ;; and TAB or <C-m> and RET.
+   ;; In the terminal, these pairs are generally indistinguishable, so this only
+   ;; works in the GUI. (default nil)
+   dotspacemacs-distinguish-gui-tab t
+   ;; If non nil `Y' is remapped to `y$'. (default t)
    dotspacemacs-remap-Y-to-y$ t
+   ;; If non-nil, the shift mappings `<' and `>' retain visual state if used
+   ;; there. (default t)
+   dotspacemacs-retain-visual-state-on-shift t
+   ;; If non-nil, J and K move lines up and down when in visual mode.
+   ;; (default nil)
+   dotspacemacs-visual-line-move-text nil
+   ;; If non nil, inverse the meaning of `g' in `:substitute' Evil ex-command.
+   ;; (default nil)
+   dotspacemacs-ex-substitute-global nil
+   ;; Name of the default layout (default "Default")
    dotspacemacs-default-layout-name "Default"
+   ;; If non nil the default layout name is displayed in the mode-line.
+   ;; (default nil)
    dotspacemacs-display-default-layout nil
+   ;; If non nil then the last auto saved layouts are resume automatically upon
+   ;; start. (default nil)
    dotspacemacs-auto-resume-layouts nil
+   ;; Size (in MB) above which spacemacs will prompt to open the large file
+   ;; literally to avoid performance issues. Opening a file literally means that
+   ;; no major mode or minor modes are active. (default is 1)
+   dotspacemacs-large-file-size 1
+   ;; Location where to auto-save files. Possible values are `original' to
+   ;; auto-save the file in-place, `cache' to auto-save the file to another
+   ;; file stored in the cache directory and `nil' to disable auto-saving.
+   ;; (default 'cache)
    dotspacemacs-auto-save-file-location 'cache
+   ;; Maximum number of rollback slots to keep in the cache. (default 5)
    dotspacemacs-max-rollback-slots 7
-   dotspacemacs-use-ido nil
+   ;; If non nil, `helm' will try to minimize the space it uses. (default nil)
    dotspacemacs-helm-resize nil
+   ;; if non nil, the helm header is hidden when there is only one source.
+   ;; (default nil)
    dotspacemacs-helm-no-header nil
+   ;; define the position to display `helm', options are `bottom', `top',
+   ;; `left', or `right'. (default 'bottom)
    dotspacemacs-helm-position 'bottom
-   dotspacemacs-enable-paste-micro-state nil
+   ;; If non nil the paste micro-state is enabled. When enabled pressing `p`
+   ;; several times cycle between the kill ring content. (default nil)
+   dotspacemacs-enable-paste-transient-state t
+   ;; Which-key delay in seconds. The which-key buffer is the popup listing
+   ;; the commands bound to the current keystroke sequence. (default 0.4)
    dotspacemacs-which-key-delay 0.4
-   dotspacemacs-which-key-position 'right-then-bottom
+   ;; Which-key frame position. Possible values are `right', `bottom' and
+   ;; `right-then-bottom'. right-then-bottom tries to display the frame to the
+   ;; right; if there is insufficient space it displays it at the bottom.
+   ;; (default 'bottom)
+   dotspacemacs-which-key-position 'bottom
+   ;; If non nil a progress bar is displayed when spacemacs is loading. This
+   ;; may increase the boot time on some systems and emacs builds, set it to
+   ;; nil to boost the loading time. (default t)
    dotspacemacs-loading-progress-bar t
+   ;; If non nil the frame is fullscreen when Emacs starts up. (default nil)
+   ;; (Emacs 24.4+ only)
    dotspacemacs-fullscreen-at-startup nil
+   ;; If non nil `spacemacs/toggle-fullscreen' will not use native fullscreen.
+   ;; Use to disable fullscreen animations in OSX. (default nil)
    dotspacemacs-fullscreen-use-non-native nil
-   dotspacemacs-maximized-at-startup t
+   ;; If non nil the frame is maximized when Emacs starts up.
+   ;; Takes effect only if `dotspacemacs-fullscreen-at-startup' is nil.
+   ;; (default nil) (Emacs 24.4+ only)
+   dotspacemacs-maximized-at-startup nil
+   ;; A value from the range (0..100), in increasing opacity, which describes
+   ;; the transparency level of a frame when it's active or selected.
+   ;; Transparency can be toggled through `toggle-transparency'. (default 90)
    dotspacemacs-active-transparency 90
+   ;; A value from the range (0..100), in increasing opacity, which describes
+   ;; the transparency level of a frame when it's inactive or deselected.
+   ;; Transparency can be toggled through `toggle-transparency'. (default 90)
    dotspacemacs-inactive-transparency 90
+   ;; If non nil show the titles of transient states. (default t)
+   dotspacemacs-show-transient-state-title t
+   ;; If non nil show the color guide hint for transient state keys. (default t)
+   dotspacemacs-show-transient-state-color-guide t
+   ;; If non nil unicode symbols are displayed in the mode line. (default t)
    dotspacemacs-mode-line-unicode-symbols t
+   ;; If non nil smooth scrolling (native-scrolling) is enabled. Smooth
+   ;; scrolling overrides the default behavior of Emacs which recenters point
+   ;; when it reaches the top or bottom of the screen. (default t)
    dotspacemacs-smooth-scrolling t
+   ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
+   ;; derivatives. If set to `relative', also turns on relative line numbers.
+   ;; (default nil)
    dotspacemacs-line-numbers nil
+   ;; Code folding method. Possible values are `evil' and `origami'.
+   ;; (default 'evil)
+   dotspacemacs-folding-method 'evil
+   ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
+   ;; (default nil)
    dotspacemacs-smartparens-strict-mode t
+   ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
+   ;; over any automatically added closing parenthesis, bracket, quote, etc…
+   ;; This can be temporary disabled by pressing `C-q' before `)'. (default nil)
+   dotspacemacs-smart-closing-parenthesis nil
+   ;; Select a scope to highlight delimiters. Possible values are `any',
+   ;; `current', `all' or `nil'. Default is `all' (highlight any scope and
+   ;; emphasis the current one). (default 'all)
    dotspacemacs-highlight-delimiters 'all
+   ;; If non nil advises quit functions to keep server open when quitting.
+   ;; (default nil)
    dotspacemacs-persistent-server nil
+   ;; List of search tool executable names. Spacemacs uses the first installed
+   ;; tool of the list. Supported tools are `ag', `pt', `ack' and `grep'.
+   ;; (default '("ag" "pt" "ack" "grep"))
    dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
+   ;; The default package repository used if no explicit repository has been
+   ;; specified with an installed package.
+   ;; Not used for now. (default nil)
    dotspacemacs-default-package-repository nil
-   dotspacemacs-whitespace-cleanup 'changed))
+   ;; Delete whitespace while saving buffer. Possible values are `all'
+   ;; to aggressively delete empty line and long sequences of whitespace,
+   ;; `trailing' to delete only the whitespace at end of lines, `changed'to
+   ;; delete only whitespace for changed lines or `nil' to disable cleanup.
+   ;; (default nil)
+   dotspacemacs-whitespace-cleanup nil
+   ))
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
-It is called immediately after `dotspacemacs/init'.  You are free to put any
-user code."
-  (setq save-interprogram-paste-before-kill t)
-  (let ((active1 "#222226") (active2 "#5d4d7a")
-        (base "#b2b2b2") (cursor "#e3dedd")
-        (comment "#2aa198") (comment-bg "#293234")
-        (bg1 "#292b2e") (bg2 "#212026")
-        (bg3 "#100a14") (bg4 "#0a0814")
-        (war "#dc752f") (inf "#2f96dc") (green "#67b11d"))
-    (setq theming-modifications
-          `((spacemacs-dark
-             (diff-hl-change :foreground ,inf :background "#001836")
-             (diff-hl-delete :foreground ,war :background "#361800")
-             (diff-hl-insert :foreground ,green :background "#003618")
-             ;; (helm-visible-mark :foreground ,green :background ,bg4)
-             ;; `(imenu-list-entry-face-0 ((t (:foreground "#bc6ec5"))))
-             ;; `(imenu-list-entry-face-1 ((t (:foreground "#2f96dc"))))
-             ;; `(imenu-list-entry-face-2 ((t (:foreground "#67b11d"))))
-
-             ;; `popup-tip-face' used by flycheck tips
-             ;; `(popup-tip-face :foreground ,cursor :background ,active2 :bold nil)
-             ;; `(popup-tip-face :foreground "black" :background ,comment :bold nil :box t)
-             ;; `tooltip' used by company-quickhelp tips
-             ;; `(tooltip :foreground ,active1 :background "#ad9dca")
-             ;; `(tooltip :foreground "#efefef" :background "#4d3d6a")
-             )))))
+It is called immediately after `dotspacemacs/init', before layer configuration
+executes.
+ This function is mostly useful for variables that need to be set
+before packages are loaded. If you are unsure, you should try in setting them in
+`dotspacemacs/user-config' first."
+  (setq custom-file (expand-file-name "mycustom.el" spacemacs-cache-directory))
+  (load custom-file)
+  (setq paradox-github-token t)
+  ;; (defun spacemacs/useful-buffer-p (buffer)
+  ;;   (not (spacemacs/useless-buffer-p buffer)))
+  )
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
-  (setq evil-escape-delay 0.2)
-
-  (add-hook 'smartparens-enabled-hook #'evil-cleverparens-mode)
-
-  (add-hook 'prog-mode-hook 'evil-mc-mode)
-  (add-hook 'text-mode-hook 'evil-mc-mode)
-  (with-eval-after-load 'evil-mc
-    (diminish 'evil-mc-mode))
-
-  ;; powerline changes
-  (setq powerline-default-separator 'alternate)
-  ;; (spaceline-define-segment purpose
-  ;;   (substring (purpose--modeline-string) 2 -1)
-  ;;   :when purpose-mode)
-  ;; (unless (memq 'purpose spaceline-left)
-  ;;   (setq spaceline-left
-  ;;         (-insert-at (1+ (-elem-index 'major-mode spaceline-left))
-  ;;                     'purpose
-  ;;                     spaceline-left)))
-  ;; (diminish 'purpose-mode)
-  (setq spaceline-version-control-p nil)
-  ;; (setq spaceline-minor-modes-p nil)
-
-  ;; fix ffap pinging when trying to complete such as "a.is"
-  (setq ffap-machine-p-known 'reject)
-
-  ;; auto-completion
-  (setq company-idle-delay 0.01)
-  (setq company-minimum-prefix-length 1)
-  (setq company-tooltip-align-annotations t)
-
-  ;; comint
-  (with-eval-after-load 'comint
-    (dolist (state '(normal insert emacs))
-      (evil-define-key state comint-mode-map
-        (kbd "M-p") #'comint-previous-matching-input-from-input
-        (kbd "M-n") #'comint-next-matching-input-from-input
-        (kbd "C-c M-r") #'comint-previous-input
-        (kbd "C-c M-s") #'comint-next-input)))
-  (evil-leader/set-key
-    "oh" #'helm-comint-input-ring)
-
-  ;; smartparens (highlighting)
-  (setq sp-highlight-pair-overlay nil)
-  (show-smartparens-global-mode -1)
-
+  ;; small graphical changes
   (setq frame-title-format "Spacemacs")
 
-  ;; dired
-  (setq dired-guess-shell-alist-user
-        '(("\\.pdf\\'" "evince")
-          ("\\.ods\\'\\|\\.xlsx?\\'\\|\\.docx?\\'\\|\\.csv\\'" "libreoffice")
-          ("\\.jpg\\'" "gpicview")))
+  ;; properly enable/disable cleverparens
+  (add-hook 'smartparens-enabled-hook #'spacemacs/toggle-evil-cleverparens-on)
+  (add-hook 'smartparens-disabled-hook #'spacemacs/toggle-evil-cleverparens-off)
+  ;; cleverparens works better with these settings
+  (setq evil-move-cursor-back nil
+        evil-move-beyond-eol t)
 
-  ;; nyan-mode
-  (setq nyan-bar-length 16)
+  ;; anzu commands provide a preview of matches
+  (global-set-key [remap query-replace] #'anzu-query-replace)
+  (global-set-key [remap query-replace-regexp] #'anzu-query-replace-regexp)
 
-  ;; (cl-pushnew '("Cask$" . emacs-lisp-mode) auto-mode-alist
-  ;;             :key #'car :test #'equal)
+  (when (configuration-layer/layer-usedp 'helm)
+    ;; un-fuzzy helm-locate
+    (setq helm-locate-fuzzy-match nil)
+    (spacemacs/set-leader-keys "oi" #'helm-comint-input-ring))
 
-  ;; window-purpose
-  ;; (with-eval-after-load 'window-purpose
-  ;;   (cl-pushnew '(conf-mode . edit) purpose-user-mode-purposes :key #'car)
-  ;;   (cl-pushnew '(cider-repl-mode . terminal) purpose-user-mode-purposes :key #'car)
-  ;;   (cl-pushnew '("\\.log$" . log) purpose-user-regexp-purposes
-  ;;               :key #'car :test #'equal)
-  ;;   (cl-pushnew '(web-mode-prog-mode . edit) purpose-user-mode-purposes :key #'car)
-  ;;   (cl-pushnew '(org-mode . org) purpose-user-mode-purposes :key #'car)
-  ;;   (cl-pushnew '(".travis.yml" . edit) purpose-user-name-purposes
-  ;;               :key #'car :test #'equal)
-  ;;   ;; (purpose-compile-user-configuration)
+  ;; automatically toggle emacs state with artist-mode
+  (defun artist-mode-toggle-emacs-state ()
+    (if artist-mode
+        (unless (evil-emacs-state-p)
+          (evil-emacs-state))
+      (evil-exit-emacs-state)))
+  (unless (eq dotspacemacs-editing-style 'emacs)
+    (add-hook 'artist-mode-hook #'artist-mode-toggle-emacs-state))
 
-  ;;   ;; (when (require 'window-purpose-x nil t)
-  ;;   ;;   (purpose-x-magit-single-on))
+  (when (configuration-layer/package-usedp 'avy)
+    (spacemacs/set-leader-keys "jj" #'evil-avy-goto-word-0))
+  ;; (spacemacs/set-leader-keys
+  ;;   "rsw" #'window-configuration-to-register
+  ;;   "rsf" #'frame-configuration-to-register
+  ;;   "rsp" #'point-to-register
+  ;;   "rj" #'jump-to-register)
+  ;; (spacemacs/declare-prefix "rs" "save register")
+  ;; (spacemacs/declare-prefix "rj" "load register")
 
-  ;;   ;; because of winconf2
-  ;;   ;; (popwin-mode -1)
-  ;;   ;; (pupo-mode -1)
-  ;;   ;; (setq popwin:special-display-config
-  ;;   ;;       (cl-delete "*Help*" popwin:special-display-config
-  ;;   ;;                  :key #'car :test #'equal))
-  ;;   ;; (pupo/update-purpose-config)
-  ;;   )
+  ;; tabbar-ruler causes display issues for hydra-powered transient states :-(
+  ;; (use-package tabbar-ruler
+  ;;   :init
+  ;;   (setq tabbar-ruler-global-tabbar t)
+  ;;   :config
+  ;;   (setq tabbar-buffer-groups-function 'tabbar-buffer-groups))
 
-  ;; nlinum
-  (spacemacs|add-toggle line-numbers
-    :status nlinum-mode
-    :on (global-nlinum-mode)
-    :off (global-nlinum-mode -1)
-    :documentation "Show the line numbers."
-    :evil-leader "tn")
+  ;; let emacs know where to find source files
+  (when (and (version< emacs-version "25.0")
+             (version<= "24.5" emacs-version))
+    ;; this doesn't working...
+    ;; (setq find-function-source-path '("~/Documents/emacs/24.5/lisp/"))
+    (setq find-function-C-source-directory "~/Documents/emacs/24.5/src/"))
 
-  ;; irfc
-  (with-eval-after-load 'irfc-mode
-    (evilified-state-evilify irfc-mode irfc-mode-map
-             "g" #'irfc-table-jump
-             "G" #'irfc-page-goto))
+  ;; spaceline/purpose
+  (with-eval-after-load 'spaceline
+    (setq powerline-default-separator 'bar)
+    (set-face-attribute 'mode-line-inactive nil :box nil)
+    (spaceline-toggle-minor-modes-off)
+    (with-eval-after-load 'window-purpose
+      (spaceline-define-segment purpose
+        "Purpose of buffer."
+        ;; (purpose--modeline-string)
+        (when purpose-mode (format "%s%s%s"
+                                   (purpose-buffer-purpose (current-buffer))
+                                   (if (window-dedicated-p) "#" "")
+                                   (if (purpose-window-purpose-dedicated-p) "!" ""))))
 
-  ;; customize
-  (with-eval-after-load 'cus-edit
-    (evilified-state-evilify Custom-mode custom-mode-map))
+      (let* ((main-mode-line (cdr (assq 'main spaceline--mode-lines)))
+             (left-mode-line (car main-mode-line))
+             (right-mode-line (cdr main-mode-line)))
+        (unless (memq 'purpose left-mode-line)
+          (setcar main-mode-line
+                  (-insert-at (1+ (-elem-index 'major-mode left-mode-line))
+                              'purpose
+                              left-mode-line))))
+      ;; remove purpose-mode from minor-modes list
+      (diminish 'purpose-mode))
+    (spaceline-compile))
 
-  ;; (with-eval-after-load 'helm
-  ;;   (define-key helm-map (kbd "C-M-h") #'help-command))
-  (setq helm-locate-fuzzy-match nil)
+  ;; extra window-purpose config
+  (with-eval-after-load 'window-purpose
+    (push (expand-file-name "purpose-layouts/" dotspacemacs-directory)
+          purpose-layout-dirs)
+    (purpose-x-magit-multi-on)
+    (purpose-add-user-purposes :modes '((org-mode . org))))
 
+  ;; slime-purpose config:
+  (with-eval-after-load 'window-purpose
+    (purpose-add-user-purposes :modes '((slime-repl-mode . terminal)))
+    (defun display-buffer-split (buffer alist)
+      (let ((window (split-window nil nil (cdr (assq 'split-side alist)))))
+        (window--display-buffer buffer window 'window alist)
+        window))
+    ;; slime doesn't handle case where fuzzy completion is displayed in the
+    ;; repl's window (can happen if the other window is dedicated - bug in slime)
+    (push "\\*Fuzzy Completions\\*" purpose-action-function-ignore-buffer-names)
+    (push '("\\*Fuzzy Completions\\*"
+            (purpose-display-reuse-window-buffer
+             purpose-display-reuse-window-purpose
+             purpose-display-maybe-other-window
+             display-buffer-split)
+            (split-side . right)
+            (window-width . 60)
+            (window-height . 24))
+          display-buffer-alist))
+
+  (defun set-transperancy (&optional frame)
+    (let ((frame (or frame (selected-frame))))
+      (if (display-graphic-p frame)
+          (set-frame-parameter frame 'alpha '(80 80))
+        (set-face-background 'default "unspecified-bg" frame))))
+
+  ;; go fullscreen only for magit status, not other buffers
+  (when git-magit-status-fullscreen
+    (setq magit-display-buffer-function
+          (lambda (buffer)
+            (if (or
+                 ;; the original should stay alive, so we can't go fullscreen
+                 magit-display-buffer-noselect
+                 ;; go fullscreen only for magit status
+                 (not (with-current-buffer buffer (derived-mode-p 'magit-status-mode))))
+                ;; open buffer according to original magit rules
+                (magit-display-buffer-traditional buffer)
+              ;; open buffer in fullscreen
+              (delete-other-windows)
+              ;; make sure the window isn't dedicated, otherwise
+              ;; `set-window-buffer' throws an error
+              (set-window-dedicated-p nil nil)
+              (purpose-set-window-purpose-dedicated-p nil nil)
+              (set-window-buffer nil buffer)
+              ;; return buffer's window
+              (get-buffer-window buffer)))))
+
+  (when (and (configuration-layer/layer-usedp 'auto-complete)
+             (configuration-layer/layer-usedp 'octave))
+    (defun company-octave (command &optional arg &rest args)
+      "`company-mode' backend using `completion-at-point-functions'."
+      (interactive (list 'interactive))
+      (if (eq command 'doc-buffer)
+          ;; TODO `octave-help' displays the help buffer, we'd rather use a function
+          ;; that doesn't display the help buffer
+          (save-window-excursion
+            (ignore-errors
+              (octave-help arg)
+              (get-buffer octave-help-buffer)))
+        (apply #'company-capf command arg args)))
+
+    (spacemacs|defvar-company-backends octave-mode)
+    (spacemacs|defvar-company-backends inferior-octave-mode)
+    (spacemacs|add-company-hook octave-mode)
+    (spacemacs|add-company-hook inferior-octave-mode)
+    (push 'company-octave company-backends-octave-mode)
+    (push 'company-octave company-backends-inferior-octave-mode))
   )
