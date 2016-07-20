@@ -323,10 +323,8 @@ executes.
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
   (setq custom-file (expand-file-name "mycustom.el" spacemacs-cache-directory))
-  (load custom-file)
+  (load custom-file 'noerror)
   (setq paradox-github-token t)
-  ;; (defun spacemacs/useful-buffer-p (buffer)
-  ;;   (not (spacemacs/useless-buffer-p buffer)))
   )
 
 (defun dotspacemacs/user-config ()
@@ -336,6 +334,7 @@ layers configuration. You are free to put any user code."
   ;; small graphical changes
   (setq frame-title-format "Spacemacs")
 
+  ;; TODO: make a PR for evil-cp settings
   ;; properly enable/disable cleverparens
   (add-hook 'smartparens-enabled-hook #'spacemacs/toggle-evil-cleverparens-on)
   (add-hook 'smartparens-disabled-hook #'spacemacs/toggle-evil-cleverparens-off)
@@ -352,6 +351,7 @@ layers configuration. You are free to put any user code."
     (setq helm-locate-fuzzy-match nil)
     (spacemacs/set-leader-keys "oi" #'helm-comint-input-ring))
 
+  ;; TODO: make PR upstream?
   ;; automatically toggle emacs state with artist-mode
   (defun artist-mode-toggle-emacs-state ()
     (if artist-mode
@@ -411,6 +411,7 @@ layers configuration. You are free to put any user code."
       (diminish 'purpose-mode))
     (spaceline-compile))
 
+  ;; TODO: put all window configuration in a layer
   ;; extra window-purpose config
   (with-eval-after-load 'window-purpose
     (push (expand-file-name "purpose-layouts/" dotspacemacs-directory)
@@ -465,6 +466,7 @@ layers configuration. You are free to put any user code."
               ;; return buffer's window
               (get-buffer-window buffer)))))
 
+  ;; TODO: move to a layer (or add upstream?)
   (when (and (configuration-layer/layer-usedp 'auto-complete)
              (configuration-layer/layer-usedp 'octave))
     (defun company-octave (command &optional arg &rest args)
