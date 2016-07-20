@@ -1,0 +1,3 @@
+My personal configuration for Spacemacs. The configuration follows Spacemcs'
+develop branch. To install, clone the directory to =~/.spacemacs.d=. If you have
+a =~.spacemacs= file, move it out of the way.
