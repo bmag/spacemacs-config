@@ -32,8 +32,8 @@ values."
    dotspacemacs-configuration-layers
    '(
      ;; completion layer
-     helm
-     ;; ivy
+     ;; helm
+     ivy
 
      ;; tools
      (auto-completion :variables
@@ -337,6 +337,9 @@ layers configuration. You are free to put any user code."
   ;; small graphical changes
   (setq frame-title-format "Spacemacs")
 
+  ;; recenter window-point after imenu jumps
+  (add-hook 'imenu-after-jump-hook (lambda () (recenter 10)))
+
   ;; TODO: make a PR for evil-cp settings
   ;; properly enable/disable cleverparens
   (add-hook 'smartparens-enabled-hook #'spacemacs/toggle-evil-cleverparens-on)
@@ -353,6 +356,9 @@ layers configuration. You are free to put any user code."
     ;; un-fuzzy helm-locate
     (setq helm-locate-fuzzy-match nil)
     (spacemacs/set-leader-keys "oi" #'helm-comint-input-ring))
+
+  (when (configuration-layer/layer-usedp 'ivy)
+    (spacemacs/set-leader-keys "oi" #'counsel-shell-history))
 
   ;; TODO: make PR upstream?
   ;; automatically toggle emacs state with artist-mode
