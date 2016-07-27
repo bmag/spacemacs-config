@@ -27,7 +27,10 @@ values."
    ;; If non-nil layers with lazy install support are lazy installed.
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
-   dotspacemacs-configuration-layer-path '("~/.spacemacs.d/")
+
+   ;; gotcha: using "~/.spacemacs.d/" is wrong then trying to use a
+   ;; different dotspacemacs directory (e.g. via SPACEMACSDIR)
+   dotspacemacs-configuration-layer-path (list (expand-file-name "layers/" dotspacemacs-directory))
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
@@ -97,6 +100,8 @@ values."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(tabbar-ruler flycheck-package vimrc-mode buttercup el-mock)
+   ;; A list of packages that cannot be updated.
+   dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; Defines the behaviour of Spacemacs when downloading packages.
@@ -325,7 +330,22 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (setq custom-file (expand-file-name "mycustom.el" spacemacs-cache-directory))
+  (when (eq system-type 'gnu/linux)
+    (let ((machine-home (expand-file-name "machines/linux/" dotspacemacs-directory)))
+      ;; give machine its own cache
+      (setq spacemacs-cache-directory (expand-file-name "cache/" machine-home))))
+
+  (when (eq system-type 'windows-nt)
+    (let ((machine-home (expand-file-name "machines/windows/" dotspacemacs-directory)))
+      ;; give machine its own cache
+      (setq spacemacs-cache-directory (expand-file-name "cache/" machine-home))
+      (push (expand-file-name "bin/" machine-home) exec-path)
+      (push (expand-file-name "bin/diffutils/" machine-home) exec-path)))
+
+  ;; share packages between machines (`dotspacemacs-directory' and `package-user-dir' are shared)
+  (setq custom-file (expand-file-name "mycustom.el" dotspacemacs-directory))
+  (setq configuration-layer-rollback-directory (expand-file-name "rollback" dotspacemacs-directory))
+
   (load custom-file 'noerror)
   (setq paradox-github-token t)
   )

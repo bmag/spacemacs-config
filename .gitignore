@@ -6,3 +6,12 @@
 
 # Temporary
 *~
+
+# shared packages
+mycustom.el
+rollback
+# cache directories
+machines/linux/cache/
+machines/windows/cache/
+# binaries for windows
+machines/windows/bin/
