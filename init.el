@@ -197,7 +197,7 @@ values."
    dotspacemacs-major-mode-emacs-leader-key "C-M-m"
    ;; The key used for Emacs commands (M-x) (after pressing on the leader key).
    ;; (default "SPC")
-   dotspacemacs-emacs-command-key "SPC"
+   dotspacemacs-emacs-command-key ":"
    ;; These variables control whether separate commands are bound in the GUI to
    ;; the key pairs C-i, TAB and C-m, RET.
    ;; Setting it to a non-nil value, allows for separate commands under <C-i>
@@ -292,7 +292,7 @@ values."
    dotspacemacs-line-numbers nil
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
-   dotspacemacs-folding-method 'evil
+   dotspacemacs-folding-method 'origami
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
    dotspacemacs-smartparens-strict-mode t
@@ -391,7 +391,16 @@ layers configuration. You are free to put any user code."
     (add-hook 'artist-mode-hook #'artist-mode-toggle-emacs-state))
 
   (when (configuration-layer/package-usedp 'avy)
-    (spacemacs/set-leader-keys "jj" #'evil-avy-goto-word-0))
+    ;; (spacemacs/set-leader-keys "jj" #'evil-avy-goto-word-0)
+    (spacemacs/set-leader-keys "SPC" #'evil-avy-goto-word-0)
+    (with-eval-after-load 'avy
+      (add-to-list 'avy-keys-alist
+                   (cons 'avy-goto-word-0 (list ?a ?s ?d ?f ?l ?k ?j
+                                                ?w ?e ?u ?i ?v ?n
+                                                ?g ?h)))))
+
+  (when (configuration-layer/package-usedp 'magit)
+    (add-to-list 'spacemacs-useful-buffers-regexp "^\\*magit"))
   ;; (spacemacs/set-leader-keys
   ;;   "rsw" #'window-configuration-to-register
   ;;   "rsf" #'frame-configuration-to-register
@@ -441,4 +450,11 @@ layers configuration. You are free to put any user code."
     (spacemacs|add-company-hook inferior-octave-mode)
     (push 'company-octave company-backends-octave-mode)
     (push 'company-octave company-backends-inferior-octave-mode))
+
+  (defun bm-add-project-buffers-to-layout ()
+    "Add all of current project's buffers to current layout.
+Handy after creating project layout with [SPC p l]."
+    (interactive)
+    (let ((persp-switch-to-added-buffer nil))
+      (mapc #'persp-add-buffer (projectile-project-buffers))))
   )
