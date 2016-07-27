@@ -12,16 +12,10 @@
 
 (setq window-purpose-packages '(eyebrowse
                                 (helm-purpose :toggle (configuration-layer/layer-usedp 'helm))
-                                (ivy-purpose :location local
-                                             :toggle (configuration-layer/layer-usedp 'ivy))
+                                (ivy-purpose :toggle (configuration-layer/layer-usedp 'ivy))
                                 popwin
                                 (purpose-popwin :location local)
-                                window-purpose
-                                ;; (window-purpose :location
-                                ;;                 (recipe :fetcher git
-                                ;;                         :url "file://home/magal/bar/emacs-purpose/"
-                                ;;                         :files (:defaults "layouts")))
-                                ))
+                                window-purpose))
 
 (setq window-purpose-excluded-packages '())
 
