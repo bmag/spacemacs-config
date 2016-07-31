@@ -36,7 +36,7 @@ values."
    '(
      ;; completion layer
      ;; helm
-     ivy
+     ivy ivy-tweaks
 
      ;; tools
      (auto-completion :variables
@@ -133,7 +133,7 @@ values."
    dotspacemacs-elpa-timeout 5
    ;; If non nil then spacemacs will check for updates at startup
    ;; when the current branch is not `develop'. (default t)
-   dotspacemacs-check-for-update t
+   dotspacemacs-check-for-update nil
 
    ;; `dotspacemacs-enable-multiple-emacs-version' doesn't exist yet, it's just
    ;; part of a PR for now.
