@@ -451,10 +451,71 @@ layers configuration. You are free to put any user code."
     (push 'company-octave company-backends-octave-mode)
     (push 'company-octave company-backends-inferior-octave-mode))
 
+  ;; one-project-per-layout workflow
   (defun bm-add-project-buffers-to-layout ()
     "Add all of current project's buffers to current layout.
 Handy after creating project layout with [SPC p l]."
     (interactive)
     (let ((persp-switch-to-added-buffer nil))
       (mapc #'persp-add-buffer (projectile-project-buffers))))
+
+  (defun bm-project-buffer-p (buffer)
+    "Return non-nil if BUFFER belongs in current project."
+    (projectile-project-buffer-p buffer (projectile-project-root)))
+
+  (defun bm-remove-non-project-buffers-from-layout ()
+    "Remove from current layout all buffers that aren't in the current project."
+    (interactive)
+    (cl-loop for buffer in (persp-buffers (get-current-persp))
+             unless (bm-project-buffer-p buffer)
+             do (persp-remove-buffer buffer)))
+
+  (defun bm-buffer-project-layout (buffer)
+    "Get BUFFER's project's layout, if it exists."
+    (with-current-buffer buffer
+      (when (projectile-project-p)
+        (let ((root (projectile-project-root)))
+          (cl-loop for persp in (persp-persps)
+                   when (f-equal? root (safe-persp-name persp))
+                   return persp)))))
+
+  (defun bm-display-buffer-in-project-layout-condition (buffer alist)
+    (let ((persp (bm-buffer-project-layout buffer)))
+      (and persp
+           (not (get-buffer-window buffer (cdr (assq 'reusable-frames alist))))
+           (not (equalp persp (get-current-persp))))))
+
+  (defun bm-display-buffer-in-project-layout (buffer _alist)
+    (let ((persp (bm-buffer-project-layout buffer)))
+      (persp-switch (persp-name persp))
+      ;; re-run `display-buffer'
+      (display-buffer buffer)))
+
+  (defun bm-display-buffer-in-project-layout-maybe (buffer alist)
+    (when (bm-display-buffer-in-project-layout-condition buffer alist)
+      (bm-display-buffer-in-project-layout buffer alist)))
+
+  (defun bm-goto-buffer-project-layout (buffer)
+    "Show BUFFER in its project's layout.
+If BUFFER doesn't have a project, or the project doesn't have a
+layout, display BUFFER in the current layout."
+    (interactive "B")
+    (pop-to-buffer buffer '((;; show buffer in its project's layout
+                             bm-display-buffer-in-project-layout-maybe
+                             ;; fallback to display in current window
+                             display-buffer-same-window)
+                            (inhibit-same-window . nil))))
+
+  ;; append - so popwin has preference (sometimes projectil thinks that buffers
+  ;; like "*Help*" are part of the project).
+  ;; `projectile-globally-ignored-buffers' looks relevant
+  (add-to-list 'display-buffer-alist
+               '(bm-display-buffer-in-project-layout-condition
+                 bm-display-buffer-in-project-layout)
+               'append)
+  (add-to-list 'purpose-special-action-sequences
+               (list (lambda (purpose buffer alist)
+                       (bm-display-buffer-in-project-layout-condition buffer alist))
+                     #'bm-display-buffer-in-project-layout)
+               'append)
   )
