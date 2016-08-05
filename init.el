@@ -486,10 +486,19 @@ Handy after creating project layout with [SPC p l]."
            (not (equalp persp (get-current-persp))))))
 
   (defun bm-display-buffer-in-project-layout (buffer _alist)
+    "Display BUFFER in its project's layout.
+This function actually just switches to the project's layout, but
+doesn't display the buffer. Instead, it returns nil so
+`display-buffer' will display the buffer with another display function.
+
+This function is meant to be used in `display-buffer-alist', or
+in the action argument for `display-buffer' or `pop-to-buffer'."
     (let ((persp (bm-buffer-project-layout buffer)))
       (persp-switch (persp-name persp))
-      ;; re-run `display-buffer'
-      (display-buffer buffer)))
+      ;; ;; re-run `display-buffer'
+      ;; (display-buffer buffer)
+      ;; let `display-buffer' fall-through to remaining display functions
+      nil))
 
   (defun bm-display-buffer-in-project-layout-maybe (buffer alist)
     (when (bm-display-buffer-in-project-layout-condition buffer alist)
@@ -500,11 +509,11 @@ Handy after creating project layout with [SPC p l]."
 If BUFFER doesn't have a project, or the project doesn't have a
 layout, display BUFFER in the current layout."
     (interactive "B")
-    (pop-to-buffer buffer '((;; show buffer in its project's layout
-                             bm-display-buffer-in-project-layout-maybe
-                             ;; fallback to display in current window
-                             display-buffer-same-window)
-                            (inhibit-same-window . nil))))
+    (if (bm-display-buffer-in-project-layout-condition buffer nil)
+        (pop-to-buffer buffer '((bm-display-buffer-in-project-layout-maybe)
+                                (inhibit-same-window . nil)))
+      ;; fallback to display in current window
+      (switch-to-buffer buffer)))
 
   ;; append - so popwin has preference (sometimes projectil thinks that buffers
   ;; like "*Help*" are part of the project).
