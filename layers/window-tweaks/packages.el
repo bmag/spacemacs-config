@@ -30,8 +30,8 @@
 ;;; Code:
 
 (defconst window-tweaks-packages
-  '((magit :toggle (configuration-layer/layer-usedp 'window-purpose))
-    (slime :toggle (configuration-layer/layer-usedp 'window-purpose))
+  '(magit
+    slime
     window-purpose))
 
 (defun window-tweaks/post-init-magit ()

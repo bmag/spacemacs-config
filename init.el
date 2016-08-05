@@ -40,8 +40,8 @@ values."
 
      ;; tools
      (auto-completion :variables
-                      auto-completion-complete-with-key-sequence "jk"
-                      auto-completion-complete-with-key-sequence-delay 0.5
+                      ;; auto-completion-complete-with-key-sequence "jk"
+                      ;; auto-completion-complete-with-key-sequence-delay 0.5
                       auto-completion-enable-snippets-in-popup nil
                       auto-completion-enable-help-tooltip t
                       company-tooltip-align-annotations t)
@@ -183,7 +183,7 @@ values."
                                :size 14
                                :weight normal
                                :width normal
-                               :powerline-scale 1.1)
+                               :powerline-scale 1.2)
    ;; The leader key
    dotspacemacs-leader-key "SPC"
    ;; The leader key accessible in `emacs state' and `insert state'
@@ -330,6 +330,9 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
+  ;; small graphical changes
+  (setq frame-title-format "Spacemacs")
+
   (when (eq system-type 'gnu/linux)
     (let ((machine-home (expand-file-name "machines/linux/" dotspacemacs-directory)))
       ;; give machine its own cache
@@ -344,7 +347,7 @@ before packages are loaded. If you are unsure, you should try in setting them in
 
   ;; share packages between machines (`dotspacemacs-directory' and `package-user-dir' are shared)
   (setq custom-file (expand-file-name "mycustom.el" dotspacemacs-directory))
-  (setq configuration-layer-rollback-directory (expand-file-name "rollback" dotspacemacs-directory))
+  (setq configuration-layer-rollback-directory (expand-file-name "rollback/" dotspacemacs-directory))
 
   (load custom-file 'noerror)
   (setq paradox-github-token t)
@@ -354,9 +357,6 @@ before packages are loaded. If you are unsure, you should try in setting them in
   "Configuration function for user code.
 This function is called at the very end of Spacemacs initialization after
 layers configuration. You are free to put any user code."
-  ;; small graphical changes
-  (setq frame-title-format "Spacemacs")
-
   ;; recenter window-point after imenu jumps
   (add-hook 'imenu-after-jump-hook (lambda () (recenter 10)))
 

@@ -12,7 +12,7 @@
 (setq common-lisp-packages
       '(auto-highlight-symbol
         common-lisp-snippets
-        (company :toggle (configuration-layer/layer-usedp 'auto-completion))
+        company
         (slime-company :toggle (configuration-layer/layer-usedp 'auto-completion))
         company
         slime))
